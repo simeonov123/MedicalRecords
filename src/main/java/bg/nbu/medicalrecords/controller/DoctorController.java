@@ -20,19 +20,19 @@ public class DoctorController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('admin','doctor')")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
     public ResponseEntity<List<Doctor>> findAll() {
         return ResponseEntity.ok(doctorService.findAll());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('admin','doctor')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Doctor> create(@RequestBody Doctor doctor) {
         return ResponseEntity.ok(doctorService.createDoctor(doctor));
     }
 
-
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody Doctor updated) {
         return ResponseEntity.ok(doctorService.updateDoctor(id, updated));
     }
@@ -44,11 +44,10 @@ public class DoctorController {
         return ResponseEntity.noContent().build();
     }
 
-
-
-
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
     public ResponseEntity<Doctor> findById(@PathVariable Long id) {
         return ResponseEntity.ok(doctorService.findById(id));
     }
 }
+
