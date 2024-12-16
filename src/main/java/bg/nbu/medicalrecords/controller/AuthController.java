@@ -21,22 +21,21 @@ public class AuthController {
         String userId = keycloakService.createUser(
                 registrationDto.getUsername(),
                 registrationDto.getEmail(),
-                registrationDto.getPassword()
+                registrationDto.getPassword(),
+                registrationDto.getFirstName(),
+                registrationDto.getLastName()
         );
 
         // 2. Assign default role
-        // If user selected "patient", assign "patient" role right away
-        // If user selected "doctor", assign "user" role as a placeholder
         if ("patient".equalsIgnoreCase(registrationDto.getDesiredRole())) {
             keycloakService.assignRole(userId, "patient");
         } else if ("doctor".equalsIgnoreCase(registrationDto.getDesiredRole())) {
-            // assign the "user" role
-            keycloakService.assignRole(userId, "user");
+            keycloakService.assignRole(userId, "user");  // placeholder role
         } else {
-            // fallback, in case something else is provided
             keycloakService.assignRole(userId, "user");
         }
 
         return ResponseEntity.ok("User registered successfully");
     }
+
 }

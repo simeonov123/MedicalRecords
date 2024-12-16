@@ -1,14 +1,15 @@
-// Dto for capturing signup details
+// src/main/java/bg/nbu/medicalrecords/dto/KeycloakUserDto.java
 package bg.nbu.medicalrecords.dto;
 
 import lombok.Data;
 
 @Data
-public class RegistrationDto {
+public class KeycloakUserDto {
+    private String id;
     private String username;
     private String email;
-    private String password;
-    private String desiredRole;  // "patient" or "doctor"
     private String firstName;
     private String lastName;
+    private String role;
+    private boolean emailVerified;
 }

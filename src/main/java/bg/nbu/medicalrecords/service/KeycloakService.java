@@ -146,4 +146,37 @@ public class KeycloakService {
             throw new RuntimeException("Failed to assign role '" + roleName + "' to user " + userId);
         }
     }
+
+    public String createUser(String username, String email, String password, String firstName, String lastName) {
+        String adminToken = getAdminAccessToken();
+
+        String createUserUrl = keycloakAuthServerUrl + "/admin/realms/" + realmName + "/users";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Keycloak user creation payload with firstName/lastName
+        Map<String, Object> userPayload = Map.of(
+                "username", username,
+                "email", email,
+                "enabled", true,
+                "firstName", firstName,
+                "lastName",  lastName,
+                "credentials", Collections.singletonList(
+                        Map.of("type", "password", "value", password, "temporary", false)
+                )
+        );
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(userPayload, headers);
+
+        ResponseEntity<Void> response = restTemplate.postForEntity(createUserUrl, entity, Void.class);
+        if (response.getStatusCode() == HttpStatus.CREATED
+                || response.getStatusCode() == HttpStatus.NO_CONTENT) {
+            return getUserIdByUsername(username, adminToken);
+        } else {
+            throw new RuntimeException("Failed to create user in Keycloak. Status: " + response.getStatusCode());
+        }
+    }
+
 }
