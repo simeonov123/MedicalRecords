@@ -2,6 +2,7 @@ package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.Doctor;
 import bg.nbu.medicalrecords.domain.Patient;
+import bg.nbu.medicalrecords.domain.User;
 import bg.nbu.medicalrecords.dto.CreatePatientDto;
 import bg.nbu.medicalrecords.dto.PatientDto;
 import bg.nbu.medicalrecords.dto.UpdatePatientDto;
@@ -11,6 +12,7 @@ import bg.nbu.medicalrecords.repository.PatientRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,15 +20,48 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository) {
+    private final UserService userService;
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UserService userService) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
+        this.userService = userService;
+    }
+
+    public Patient createPatientFromKeycloak(String kcUserId, String name) {
+
+        User user = userService.findByKeycloakUserId(kcUserId);
+        if (user == null) {
+            throw new RuntimeException("User not found with keycloak id: " + kcUserId);
+        }
+        if (!Objects.equals(user.getKeycloakUserId(), kcUserId)) {
+            throw new RuntimeException("User keycloak id mismatch");
+        }
+
+        if (!Objects.equals(user.getRole(), "patient")) {
+
+            user.setRole("patient");
+            userService.createUser(user);
+        }
+
+
+        Patient p = new Patient();
+        p.setKeycloakUserId(kcUserId);
+        p.setName(name);
+        p.setHealthInsurancePaid(false);
+        return patientRepository.save(p);
+    }
+
+    public boolean existsByKeycloakId(String userId) {
+        return patientRepository.existsByKeycloakUserId(userId);
+    }
+
+    public void deleteByKeycloakUserId(String userId) {
+        patientRepository.deleteByKeycloakUserId(userId);
     }
 
     public PatientDto createPatient(CreatePatientDto dto) {
         Patient p = new Patient();
         p.setName(dto.getName());
-        p.setEgn(dto.getEgn());
         p.setHealthInsurancePaid(dto.getHealthInsurancePaid());
 
         if (dto.getPrimaryDoctorId() != null) {
@@ -44,7 +79,6 @@ public class PatientService {
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
 
         p.setName(dto.getName());
-        p.setEgn(dto.getEgn());
         p.setHealthInsurancePaid(dto.getHealthInsurancePaid());
 
         if (dto.getPrimaryDoctorId() != null) {
@@ -77,20 +111,48 @@ public class PatientService {
     }
 
     public PatientDto findByEgn(String egn) {
-        Patient p = patientRepository.findByEgn(egn);
+        User user = userService.findByEgn(egn);
+
+
+        Patient p = patientRepository.findByKeycloakUserId(user.getKeycloakUserId());
         if (p == null) {
             throw new ResourceNotFoundException("Patient not found with EGN: " + egn);
+        }
+        if (!Objects.equals(user.getRole(), "patient")) {
+            throw new ResourceNotFoundException("User not a patient");
         }
         return mapToDto(p);
     }
 
     private PatientDto mapToDto(Patient p) {
+        User user = userService.findByKeycloakUserId(p.getKeycloakUserId());
+
         PatientDto dto = new PatientDto();
         dto.setId(p.getId());
+        dto.setEgn(user.getEgn());
         dto.setName(p.getName());
-        dto.setEgn(p.getEgn());
         dto.setHealthInsurancePaid(p.isHealthInsurancePaid());
         dto.setPrimaryDoctorId(p.getPrimaryDoctor() != null ? p.getPrimaryDoctor().getId() : null);
         return dto;
     }
+
+    public void assignPrimaryDoctor(String patientId, Long doctorId) {
+        User user = userService.findByKeycloakUserId(patientId);
+        if (user == null) {
+            throw new ResourceNotFoundException("Patient not found with id: " + patientId);
+        }
+        if (!Objects.equals(user.getRole(), "patient")) {
+            throw new ResourceNotFoundException("User not a patient");
+        }
+        Patient p = patientRepository.findByKeycloakUserId(patientId);
+        Doctor d = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found id=" + doctorId));
+
+        p.setPrimaryDoctor(d);
+        patientRepository.save(p);
+
+        d.setPrimaryCare(true);
+        doctorRepository.save(d);
+    }
+
 }

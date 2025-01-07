@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-keycloak-user-id-to-doctors
+      author: Simeon
+      changes:
+        - addColumn:
+            tableName: doctors
+            columns:
+              - column:
+                  name: keycloak_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+
+  - changeSet:
+      id: add-keycloak-user-id-to-patients
+      author: Simeon
+      changes:
+        - addColumn:
+            tableName: patients
+            columns:
+              - column:
+                  name: keycloak_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+
+
+  - changeSet:
+      id: create-users-table
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT AUTO_INCREMENT
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: keycloak_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: egn
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: VARCHAR(255)
+              - column:
+                  name: last_name
+                  type: VARCHAR(255)

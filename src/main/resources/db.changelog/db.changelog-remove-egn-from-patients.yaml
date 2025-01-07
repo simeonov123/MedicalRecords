@@ -1,0 +1,9 @@
+# File: db.changelog/db.changelog-remove-egn-from-patients.yaml
+databaseChangeLog:
+  - changeSet:
+      id: remove-egn-from-patients
+      author: Simeon
+      changes:
+        - dropColumn:
+            columnName: egn
+            tableName: patients

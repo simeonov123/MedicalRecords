@@ -3,6 +3,7 @@ package bg.nbu.medicalrecords.controller;
 
 import bg.nbu.medicalrecords.dto.KeycloakUserDto;
 import bg.nbu.medicalrecords.service.KeycloakUserService;
+import bg.nbu.medicalrecords.service.LocalSyncService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +15,11 @@ import java.util.List;
 public class UserController {
 
     private final KeycloakUserService keycloakUserService;
+    private final LocalSyncService localSyncService;
 
-    public UserController(KeycloakUserService keycloakUserService) {
+    public UserController(KeycloakUserService keycloakUserService, LocalSyncService localSyncService) {
         this.keycloakUserService = keycloakUserService;
+        this.localSyncService = localSyncService;
     }
 
     /**
@@ -39,6 +42,8 @@ public class UserController {
             @RequestBody RoleRequest request
     ) {
         keycloakUserService.updateUserRole(userId, request.role());
+        localSyncService.handleRoleChange(userId, request.role());
+
         return ResponseEntity.ok().build();
     }
 

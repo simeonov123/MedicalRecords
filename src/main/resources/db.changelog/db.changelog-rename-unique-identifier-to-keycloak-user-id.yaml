@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: rename-unique-identifier-to-keycloak-user-id
+      author: Simeon
+      changes:
+        - renameColumn:
+            tableName: doctors
+            oldColumnName: unique_identifier
+            newColumnName: keycloak_user_id
+            columnDataType: VARCHAR(255)

@@ -56,4 +56,15 @@ public class PatientController {
     public ResponseEntity<PatientDto> findByEgn(@PathVariable String egn) {
         return ResponseEntity.ok(patientService.findByEgn(egn));
     }
+
+
+    @PutMapping("/{id}/primary-doctor/{doctorId}")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<Void> assignPrimaryDoctor(
+            @PathVariable String id,
+            @PathVariable Long doctorId
+    ) {
+        patientService.assignPrimaryDoctor(id, doctorId);
+        return ResponseEntity.ok().build();
+    }
 }

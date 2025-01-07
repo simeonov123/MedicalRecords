@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class DoctorDto {
     private Long id;
-    private String uniqueIdentifier;
+    private String keycloakUserId;
     private String name;
     private String specialties;
     private boolean primaryCare;

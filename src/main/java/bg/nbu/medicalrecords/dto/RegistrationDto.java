@@ -11,4 +11,5 @@ public class RegistrationDto {
     private String desiredRole;  // "patient" or "doctor"
     private String firstName;
     private String lastName;
+    private String egn;
 }

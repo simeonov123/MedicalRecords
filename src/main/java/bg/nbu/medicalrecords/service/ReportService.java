@@ -1,9 +1,6 @@
 package bg.nbu.medicalrecords.service;
 
-import bg.nbu.medicalrecords.domain.Appointment;
-import bg.nbu.medicalrecords.domain.Diagnosis;
-import bg.nbu.medicalrecords.domain.Doctor;
-import bg.nbu.medicalrecords.domain.Patient;
+import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.PatientDto;
 import bg.nbu.medicalrecords.exception.ResourceNotFoundException;
 import bg.nbu.medicalrecords.repository.*;
@@ -21,6 +18,7 @@ public class ReportService {
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
     private final SickLeaveRepository sickLeaveRepository;
+    private UserService userService;
 
     public ReportService(PatientRepository patientRepository,
                          DiagnosisRepository diagnosisRepository,
@@ -126,10 +124,12 @@ public class ReportService {
     }
 
     private PatientDto mapPatientToDto(Patient p) {
+        User user = userService.findByKeycloakUserId(p.getKeycloakUserId());
+
         PatientDto dto = new PatientDto();
         dto.setId(p.getId());
         dto.setName(p.getName());
-        dto.setEgn(p.getEgn());
+        dto.setEgn(user.getEgn());
         dto.setHealthInsurancePaid(p.isHealthInsurancePaid());
         dto.setPrimaryDoctorId(p.getPrimaryDoctor() != null ? p.getPrimaryDoctor().getId() : null);
         return dto;

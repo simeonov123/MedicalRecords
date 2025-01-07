@@ -1,3 +1,14 @@
+# File: db.changelog-master.yaml
 databaseChangeLog:
   - include:
       file: db.changelog/db.changelog-entities.yaml
+  - include:
+      file: db.changelog/db.changelog-2023-11-01.yaml
+  - include:
+      file: db.changelog/db.changelog-add-role-to-users.yaml
+  - include:
+      file: db.changelog/db.changelog-remove-keycloak-user-id-from-doctors.yaml
+  - include:
+      file: db.changelog/db.changelog-remove-egn-from-patients.yaml
+  - include:
+      file: db.changelog/db.changelog-rename-unique-identifier-to-keycloak-user-id.yaml

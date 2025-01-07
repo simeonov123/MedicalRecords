@@ -201,4 +201,34 @@ public class KeycloakUserService {
         }
         return Collections.emptyList();
     }
+
+    public KeycloakUserDto findUserById(String userId) {
+        String adminToken = keycloakService.getAdminAccessToken();
+        String userUrl = keycloakAuthServerUrl + "/admin/realms/" + realmName + "/users/" + userId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<Map> response = restTemplate.exchange(userUrl, HttpMethod.GET, entity, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            Map<String, Object> userData = response.getBody();
+            KeycloakUserDto userDto = new KeycloakUserDto();
+            userDto.setId((String) userData.get("id"));
+            userDto.setUsername((String) userData.get("username"));
+            userDto.setEmail((String) userData.get("email"));
+            userDto.setFirstName((String) userData.get("firstName"));
+            userDto.setLastName((String) userData.get("lastName"));
+            userDto.setEmailVerified((Boolean) userData.get("emailVerified"));
+            // Assuming role is part of the user data, otherwise fetch roles separately
+            List<Map<String, String>> realmRoles = (List<Map<String, String>>) userData.get("realmRoles");
+            if (realmRoles != null && !realmRoles.isEmpty()) {
+                userDto.setRole(realmRoles.get(0).get("name"));
+            }
+            return userDto;
+        } else {
+            throw new RuntimeException("Failed to fetch user details from Keycloak");
+        }
+    }
 }
