@@ -9,5 +9,6 @@ public class PatientDto {
     private String egn;
     private boolean healthInsurancePaid;
     private Long primaryDoctorId;
+    private String keycloakUserId;
 
 }

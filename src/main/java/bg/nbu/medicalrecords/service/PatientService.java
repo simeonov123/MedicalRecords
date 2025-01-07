@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -101,7 +102,22 @@ public class PatientService {
     }
 
     public List<PatientDto> findAll() {
-        return patientRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
+
+        List<PatientDto> patients = patientRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
+
+        for (PatientDto patient : patients) {
+            Optional<Patient> p = patientRepository.findById(patient.getId());
+            if (p.isPresent()) {
+                if (p.get().getPrimaryDoctor() != null) {
+                    patient.setPrimaryDoctorId(p.get().getPrimaryDoctor().getId());
+                }
+                if (p.get().getKeycloakUserId() != null) {
+                    patient.setKeycloakUserId(p.get().getKeycloakUserId());
+                }
+            }
+        }
+
+        return patients;
     }
 
     public PatientDto findById(Long id) {
@@ -136,15 +152,16 @@ public class PatientService {
         return dto;
     }
 
-    public void assignPrimaryDoctor(String patientId, Long doctorId) {
-        User user = userService.findByKeycloakUserId(patientId);
+    public void assignPrimaryDoctor(Long patientId, Long doctorId) {
+        Patient p = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + doctorId));
+        User user = userService.findByKeycloakUserId(p.getKeycloakUserId());
         if (user == null) {
             throw new ResourceNotFoundException("Patient not found with id: " + patientId);
         }
         if (!Objects.equals(user.getRole(), "patient")) {
             throw new ResourceNotFoundException("User not a patient");
         }
-        Patient p = patientRepository.findByKeycloakUserId(patientId);
         Doctor d = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found id=" + doctorId));
 
@@ -155,4 +172,10 @@ public class PatientService {
         doctorRepository.save(d);
     }
 
+    public void updateHealthInsuranceStatus(Long id, Boolean healthInsurancePaid) {
+        Patient patient = patientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+        patient.setHealthInsurancePaid(healthInsurancePaid);
+        patientRepository.save(patient);
+    }
 }

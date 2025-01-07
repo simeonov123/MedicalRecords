@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/patients")
@@ -61,10 +62,18 @@ public class PatientController {
     @PutMapping("/{id}/primary-doctor/{doctorId}")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> assignPrimaryDoctor(
-            @PathVariable String id,
+            @PathVariable Long id,
             @PathVariable Long doctorId
     ) {
         patientService.assignPrimaryDoctor(id, doctorId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/health-insurance")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<Void> updateHealthInsuranceStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+        Boolean healthInsurancePaid = body.get("healthInsurancePaid");
+        patientService.updateHealthInsuranceStatus(id, healthInsurancePaid);
         return ResponseEntity.ok().build();
     }
 }
