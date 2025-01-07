@@ -6,6 +6,7 @@ import bg.nbu.medicalrecords.dto.KeycloakUserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -23,9 +24,15 @@ public class KeycloakUserService {
     private String realmName;
 
     private final KeycloakService keycloakService;
+    private final DoctorService doctorService;
+    private final PatientService patientService;
+    private final UserService userService;
 
-    public KeycloakUserService(KeycloakService keycloakService) {
+    public KeycloakUserService(KeycloakService keycloakService, DoctorService doctorService, PatientService patientService, UserService userService) {
         this.keycloakService = keycloakService;
+        this.doctorService = doctorService;
+        this.patientService = patientService;
+        this.userService = userService;
     }
 
     /**
@@ -106,7 +113,10 @@ public class KeycloakUserService {
     /**
      * Delete user by Keycloak user ID
      */
+    @Transactional
     public void deleteUser(String userId) {
+        deleteAssociatedData(userId);
+
         String adminToken = keycloakService.getAdminAccessToken();
         String url = keycloakAuthServerUrl + "/admin/realms/" + realmName + "/users/" + userId;
 
@@ -116,6 +126,23 @@ public class KeycloakUserService {
         ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Failed to delete user in Keycloak");
+        }
+    }
+
+    /**
+     * Delete associated data for a user by Keycloak user ID
+     */
+
+    @Transactional
+    public void deleteAssociatedData(String userId) {
+        if (userService.existsByKeycloakId(userId)) {
+            userService.deleteByKeycloakUserId(userId);
+        }
+        if (doctorService.existsByKeycloakId(userId)) {
+            doctorService.deleteByKeycloakUserId(userId);
+        }
+        if (patientService.existsByKeycloakId(userId)) {
+            patientService.deleteByKeycloakUserId(userId);
         }
     }
 

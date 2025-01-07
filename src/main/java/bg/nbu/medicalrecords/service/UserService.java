@@ -29,4 +29,19 @@ public class UserService {
 
         return findByKeycloakUserId(user.getKeycloakUserId());
     }
+
+    public boolean existsByKeycloakId(String userId) {
+        return userRepository.existsByKeycloakUserId(userId);
+    }
+
+    public void deleteByKeycloakUserId(String userId) {
+        User user = findByKeycloakUserId(userId);
+        userRepository.delete(user);
+    }
+
+    public void assignRole(String userId, String admin) {
+        User user = findByKeycloakUserId(userId);
+        user.setRole(admin);
+        userRepository.save(user);
+    }
 }

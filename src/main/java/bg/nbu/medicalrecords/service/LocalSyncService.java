@@ -10,11 +10,13 @@ public class LocalSyncService {
     private final DoctorService doctorService;
     private final PatientService patientService;
     private final KeycloakUserService keycloakUserService;
+    private final UserService userService;
 
-    public LocalSyncService(DoctorService doctorService, PatientService patientService, KeycloakUserService keycloakUserService) {
+    public LocalSyncService(DoctorService doctorService, PatientService patientService, KeycloakUserService keycloakUserService, UserService userService) {
         this.doctorService = doctorService;
         this.patientService = patientService;
         this.keycloakUserService = keycloakUserService;
+        this.userService = userService;
     }
 
     @Transactional
@@ -34,6 +36,8 @@ public class LocalSyncService {
         } else if (newRole.equals("patient")) {
             String name = (kcData.getFirstName() == null && kcData.getLastName() == null) ? kcData.getUsername() : kcData.getFirstName() + " " + kcData.getLastName();
             patientService.createPatientFromKeycloak(userId, name);
+        } else if (newRole.equals("admin")) {
+            userService.assignRole(userId, "admin");
         }
     }
 }

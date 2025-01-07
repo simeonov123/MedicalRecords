@@ -50,8 +50,8 @@ public class AuthController {
             userService.createUser(savedUser);
             patientService.createPatientFromKeycloak(userId, registrationDto.getUsername());
         } else if ("doctor".equalsIgnoreCase(registrationDto.getDesiredRole())) {
-            keycloakService.assignRole(userId, "user");
-            savedUser.setRole("user");
+            keycloakService.assignRole(userId, "wannaBeDoctor");
+            savedUser.setRole("wannaBeDoctor");
             userService.createUser(savedUser);
 
         } else {
