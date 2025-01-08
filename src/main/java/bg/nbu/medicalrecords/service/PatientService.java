@@ -22,6 +22,7 @@ public class PatientService {
     private final DoctorRepository doctorRepository;
 
     private final UserService userService;
+
     public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UserService userService) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
@@ -149,6 +150,7 @@ public class PatientService {
         dto.setName(p.getName());
         dto.setHealthInsurancePaid(p.isHealthInsurancePaid());
         dto.setPrimaryDoctorId(p.getPrimaryDoctor() != null ? p.getPrimaryDoctor().getId() : null);
+        dto.setKeycloakUserId(p.getKeycloakUserId());
         return dto;
     }
 
@@ -177,5 +179,13 @@ public class PatientService {
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
         patient.setHealthInsurancePaid(healthInsurancePaid);
         patientRepository.save(patient);
+    }
+
+    public PatientDto findByKeycloakUserId(String keycloakUserId) {
+        Patient patient = patientRepository.findByKeycloakUserId(keycloakUserId);
+        if (patient == null) {
+            throw new ResourceNotFoundException("Patient not found with keycloakUserId: " + keycloakUserId);
+        }
+        return mapToDto(patient);
     }
 }

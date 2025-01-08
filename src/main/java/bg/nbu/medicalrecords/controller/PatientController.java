@@ -76,4 +76,10 @@ public class PatientController {
         patientService.updateHealthInsuranceStatus(id, healthInsurancePaid);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/keycloak-user-id/{keycloakUserId}")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor', 'patient')")
+    public ResponseEntity<PatientDto> findByKeycloakUserId(@PathVariable String keycloakUserId) {
+        return ResponseEntity.ok(patientService.findByKeycloakUserId(keycloakUserId));
+    }
 }

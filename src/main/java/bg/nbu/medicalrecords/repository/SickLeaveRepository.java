@@ -7,5 +7,4 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SickLeaveRepository extends JpaRepository<SickLeave, Long> {
-    List<SickLeave> findByStartDateGreaterThanEqualAndEndDateLessThanEqual(LocalDate start, LocalDate end);
 }

@@ -1,0 +1,397 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2025-01-08-01-create-doctors
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: doctors
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: keycloak_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: specialties
+                  type: VARCHAR(255)
+              - column:
+                  name: is_primary_care
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2025-01-08-02-create-patients
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: patients
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_health_insurance_paid
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: keycloak_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+              - column:
+                  name: primary_doctor_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+        - addForeignKeyConstraint:
+            baseTableName: patients
+            baseColumnNames: primary_doctor_id
+            referencedTableName: doctors
+            referencedColumnNames: id
+            constraintName: fk_patients_doctors
+            onDelete: SET NULL
+
+  - changeSet:
+      id: 2025-01-08-03-create-appointments
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: appointments
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: patient_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: doctor_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+        - addForeignKeyConstraint:
+            baseTableName: appointments
+            baseColumnNames: patient_id
+            referencedTableName: patients
+            referencedColumnNames: id
+            constraintName: fk_appointments_patients
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: appointments
+            baseColumnNames: doctor_id
+            referencedTableName: doctors
+            referencedColumnNames: id
+            constraintName: fk_appointments_doctors
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 2025-01-08-04-create-diagnoses
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: diagnoses
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: statement
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: diagnosed_date
+                  type: DATETIME
+              - column:
+                  name: appointment_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+        - addForeignKeyConstraint:
+            baseTableName: diagnoses
+            baseColumnNames: appointment_id
+            referencedTableName: appointments
+            referencedColumnNames: id
+            constraintName: fk_diagnoses_appointments
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 2025-01-08-05-create-medications
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: medications
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: medication_name
+                  type: VARCHAR(255)
+              - column:
+                  name: dosage_form
+                  type: VARCHAR(255)
+              - column:
+                  name: strength
+                  type: VARCHAR(255)
+              - column:
+                  name: side_effect
+                  type: VARCHAR(255)
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+  - changeSet:
+      id: 2025-01-08-06-create-treatments
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: treatments
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: diagnosis_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: DATE
+              - column:
+                  name: end_date
+                  type: DATE
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+        - addForeignKeyConstraint:
+            baseTableName: treatments
+            baseColumnNames: diagnosis_id
+            referencedTableName: diagnoses
+            referencedColumnNames: id
+            constraintName: fk_treatments_diagnoses
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 2025-01-08-07-create-prescriptions
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: prescriptions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: treatment_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: medication_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dosage
+                  type: VARCHAR(255)
+              - column:
+                  name: duration
+                  type: INT
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+        - addForeignKeyConstraint:
+            baseTableName: prescriptions
+            baseColumnNames: treatment_id
+            referencedTableName: treatments
+            referencedColumnNames: id
+            constraintName: fk_prescriptions_treatments
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: prescriptions
+            baseColumnNames: medication_id
+            referencedTableName: medications
+            referencedColumnNames: id
+            constraintName: fk_prescriptions_medications
+            onDelete: RESTRICT
+
+  - changeSet:
+      id: 2025-01-08-08-create-sick-leaves
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: sick_leaves
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: appointment_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: VARCHAR(255)
+              - column:
+                  name: today_date
+                  type: DATE
+              - column:
+                  name: start_date
+                  type: DATE
+              - column:
+                  name: end_date
+                  type: DATE
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+        - addForeignKeyConstraint:
+            baseTableName: sick_leaves
+            baseColumnNames: appointment_id
+            referencedTableName: appointments
+            referencedColumnNames: id
+            constraintName: fk_sick_leaves_appointments
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 2025-01-08-09-create-users
+      author: Simeon
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: keycloak_user_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: egn
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: VARCHAR(255)
+              - column:
+                  name: last_name
+                  type: VARCHAR(255)
+              - column:
+                  name: role
+                  type: VARCHAR(255)

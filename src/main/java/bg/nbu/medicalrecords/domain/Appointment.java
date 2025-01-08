@@ -1,61 +1,52 @@
 package bg.nbu.medicalrecords.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.proxy.HibernateProxy;
+import lombok.Data;
 
-import java.time.LocalDate;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
 @Entity
 @Table(name = "appointments")
+@Data
 public class Appointment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // Many appointments can belong to one Patient
+    @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
-    @ToString.Exclude
     private Patient patient;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // Many appointments can belong to one Doctor
+    @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
-    @ToString.Exclude
     private Doctor doctor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "diagnosis_id", nullable = false)
-    @ToString.Exclude
-    private Diagnosis diagnosis;
+    // One appointment can have many diagnoses
+    @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Diagnosis> diagnoses = new ArrayList<>();
 
-    @Column
-    private String treatment;
+    // One appointment can have many sick leaves
+    @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SickLeave> sickLeaves = new ArrayList<>();
 
-    @Column(name = "sick_leave_days")
-    private Integer sickLeaveDays;
 
-    @Column(nullable = false)
-    private LocalDate date;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    @Override
-    public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) return false;
-        Appointment that = (Appointment) o;
-        return getId() != null && Objects.equals(getId(), that.getId());
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
-    @Override
-    public final int hashCode() {
-        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
+
+
 }
