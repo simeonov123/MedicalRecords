@@ -76,7 +76,8 @@ public class MappingUtils {
                 treatment.getUpdatedAt(),
                 treatment.getStartDate(),
                 treatment.getEndDate(),
-                treatment.getPrescriptions().stream().map(MappingUtils::mapToPrescriptionDto).collect(Collectors.toList())
+                treatment.getPrescriptions().stream().map(MappingUtils::mapToPrescriptionDto).collect(Collectors.toList()),
+                treatment.getDescription()
         );
     }
 

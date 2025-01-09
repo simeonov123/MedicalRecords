@@ -32,6 +32,8 @@ public class Treatment {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    private String description;
+
     // One treatment can have many prescriptions
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

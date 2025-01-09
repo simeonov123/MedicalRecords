@@ -1,8 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: remove-keycloak-user-id-from-doctors
-      author: Simeon
-      changes:
-        - dropColumn:
-            columnName: keycloak_user_id
-            tableName: doctors

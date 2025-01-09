@@ -20,4 +20,6 @@ public class TreatmentDto implements Serializable {
     LocalDate startDate;
     LocalDate endDate;
     List<PrescriptionDto> prescriptions;
+     String description;
+
 }

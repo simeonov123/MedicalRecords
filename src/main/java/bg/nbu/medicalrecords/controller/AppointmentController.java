@@ -1,9 +1,15 @@
 package bg.nbu.medicalrecords.controller;
 
-import bg.nbu.medicalrecords.domain.Appointment;
+import bg.nbu.medicalrecords.domain.Diagnosis;
+import bg.nbu.medicalrecords.domain.SickLeave;
 import bg.nbu.medicalrecords.dto.AppointmentDto;
 import bg.nbu.medicalrecords.dto.CreateAppointmentDto;
+import bg.nbu.medicalrecords.dto.CreateDiagnosisDto;
+import bg.nbu.medicalrecords.dto.SickLeaveDto;
 import bg.nbu.medicalrecords.service.AppointmentService;
+import bg.nbu.medicalrecords.service.DiagnosisService;
+import bg.nbu.medicalrecords.service.SickLeaveService;
+import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +24,12 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
-
-    public AppointmentController(AppointmentService appointmentService) {
+    private final SickLeaveService sickLeaveService;
+    private final DiagnosisService diagnosisService;
+    public AppointmentController(AppointmentService appointmentService, SickLeaveService sickLeaveService, DiagnosisService diagnosisService) {
         this.appointmentService = appointmentService;
+        this.sickLeaveService = sickLeaveService;
+        this.diagnosisService = diagnosisService;
     }
 
     @GetMapping("/getAppointmentsForLoggedInUser")
@@ -43,49 +52,20 @@ public class AppointmentController {
         AppointmentDto created = appointmentService.createAppointment(dto);
         return ResponseEntity.ok(created);
     }
+
+    @PostMapping("/{appointmentId}/sick-leave")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
+    public ResponseEntity<SickLeaveDto> createSickLeave(@PathVariable Long appointmentId, @RequestBody SickLeaveDto sickLeaveDto) {
+
+
+        SickLeave sickLeave = sickLeaveService.createSickLeave(appointmentId, sickLeaveDto);
+        return ResponseEntity.ok(MappingUtils.mapToSickLeaveDto(sickLeave));
+    }
+
+    @PostMapping("/{appointmentId}/diagnosis")
+    @PreAuthorize("hasAuthority('doctor')")
+    public ResponseEntity<Diagnosis> createDiagnosis(@PathVariable Long appointmentId, @RequestBody CreateDiagnosisDto createDiagnosisDto) {
+        Diagnosis diagnosis = diagnosisService.createDiagnosis(appointmentId, createDiagnosisDto);
+        return ResponseEntity.ok(diagnosis);
+    }
 }
-    /**
-     * Retrieve single appointment by ID.
-     * A patient can see only their own appointments.
-     * A doctor can see appointments they are assigned to, or admin sees all, etc.
-     */
-//    @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('patient', 'doctor', 'admin')")
-//    public ResponseEntity<Appointment> findById(@PathVariable Long id) {
-//        Appointment apt = appointmentService.findById(id);
-//        return ResponseEntity.ok(apt);
-//    }
-
-    /**
-     * Retrieve all appointments (admin or doctor, typically).
-     * Or filter so that patient sees only their own?
-     */
-//    @GetMapping
-//    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
-//    public ResponseEntity<List<Appointment>> findAll() {
-//        List<Appointment> all = appointmentService.findAll();
-//        return ResponseEntity.ok(all);
-//    }
-
-    /**
-     * Update an existing appointment.
-     * Typically allowed if user is 'admin' or the 'doctor' of the appointment.
-     */
-//    @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('doctor','admin')")
-//    public ResponseEntity<Appointment> update(@PathVariable Long id,
-//                                              @RequestBody CreateAppointmentDto dto) {
-//        Appointment updated = appointmentService.updateAppointment(id, dto);
-//        return ResponseEntity.ok(updated);
-//    }
-
-    /**
-     * Delete an existing appointment.
-     */
-//    @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('doctor','admin')")
-//    public ResponseEntity<Void> delete(@PathVariable Long id) {
-//        appointmentService.deleteAppointment(id);
-//        return ResponseEntity.noContent().build();
-//    }
-//}

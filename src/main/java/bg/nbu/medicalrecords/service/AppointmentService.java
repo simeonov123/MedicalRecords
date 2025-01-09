@@ -67,4 +67,8 @@ public class AppointmentService {
         appointment.setAppointmentDateTime(dto.getDate());
         return MappingUtils.mapToAppointmentDto(appointmentRepository.save(appointment), currentUser);
     }
+
+    public Appointment findById(Long appointmentId) {
+        return appointmentRepository.findById(appointmentId).orElseThrow(() -> new RuntimeException("Appointment not found"));
+    }
 }
