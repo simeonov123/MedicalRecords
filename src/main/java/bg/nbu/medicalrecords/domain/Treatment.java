@@ -1,7 +1,10 @@
 package bg.nbu.medicalrecords.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +22,8 @@ public class Treatment {
     // Many treatments can belong to one diagnosis
     @ManyToOne
     @JoinColumn(name = "diagnosis_id", nullable = false)
+    @JsonIgnore
+    @ToString.Exclude
     private Diagnosis diagnosis;
 
     private LocalDateTime createdAt;
@@ -29,6 +34,8 @@ public class Treatment {
 
     // One treatment can have many prescriptions
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @ToString.Exclude
     private List<Prescription> prescriptions = new ArrayList<>();
 
 

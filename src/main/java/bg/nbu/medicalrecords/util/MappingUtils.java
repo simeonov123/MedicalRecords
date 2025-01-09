@@ -17,8 +17,10 @@ public class MappingUtils {
                 appointment.getDiagnoses().stream().map(MappingUtils::mapToDiagnosisDto).collect(Collectors.toList()),
                 appointment.getSickLeaves().stream().map(MappingUtils::mapToSickLeaveDto).collect(Collectors.toList()),
                 appointment.getCreatedAt(),
-                appointment.getUpdatedAt()
+                appointment.getUpdatedAt(),
+                appointment.getAppointmentDateTime()
         );
+
     }
 
     public static PatientDto mapToPatientDto(Patient patient, User user) {

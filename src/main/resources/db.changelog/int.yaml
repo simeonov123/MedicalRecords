@@ -114,6 +114,9 @@ databaseChangeLog:
               - column:
                   name: updated_at
                   type: DATETIME
+              - column:
+                  name: appointment_date_time
+                  type: DATETIME
 
         - addForeignKeyConstraint:
             baseTableName: appointments

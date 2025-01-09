@@ -3,10 +3,7 @@ package bg.nbu.medicalrecords.service;
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.AppointmentDto;
 import bg.nbu.medicalrecords.dto.CreateAppointmentDto;
-import bg.nbu.medicalrecords.exception.ResourceNotFoundException;
 import bg.nbu.medicalrecords.repository.AppointmentRepository;
-import bg.nbu.medicalrecords.repository.DiagnosisRepository;
-import bg.nbu.medicalrecords.repository.DoctorRepository;
 import bg.nbu.medicalrecords.repository.PatientRepository;
 import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
@@ -18,10 +15,17 @@ import java.util.stream.Collectors;
 public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final AuthenticationService authenticationService;
+    private final PatientRepository patientRepository;
+    private final PatientService patientService;
+    private final DoctorService doctorService;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, AuthenticationService authenticationService) {
+    public AppointmentService(AppointmentRepository appointmentRepository, AuthenticationService authenticationService,
+                              PatientRepository patientRepository, PatientService patientService, DoctorService doctorService) {
         this.appointmentRepository = appointmentRepository;
         this.authenticationService = authenticationService;
+        this.patientRepository = patientRepository;
+        this.patientService = patientService;
+        this.doctorService = doctorService;
     }
 
 
@@ -35,10 +39,32 @@ public class AppointmentService {
     public List<AppointmentDto> findAllForLoggedInUser() {
         User currentUser = authenticationService.getCurrentUser();
         System.out.println("Current user: " + currentUser);
-        List<Appointment> appointments = appointmentRepository.findByPatient_KeycloakUserId(currentUser.getKeycloakUserId());
+        List<Appointment> appointments;
+        if (currentUser.getRole().contains("doctor")) {
+            appointments = appointmentRepository.findByDoctor_KeycloakUserId(currentUser.getKeycloakUserId());
+        } else {
+            appointments = appointmentRepository.findByPatient_KeycloakUserId(currentUser.getKeycloakUserId());
+        }
 
         System.out.println("Appointments: " + appointments);
 
         return appointments.stream().map(appointment -> MappingUtils.mapToAppointmentDto(appointment, currentUser)).collect(Collectors.toList());
+    }
+
+    public AppointmentDto createAppointment(CreateAppointmentDto dto) {
+
+        User currentUser = authenticationService.getCurrentUser();
+        System.out.println("Current user: " + currentUser);
+        Appointment appointment = new Appointment();
+
+        Patient patient = patientService.findPatientById(dto.getPatientId());
+
+        appointment.setPatient(patient);
+
+        Doctor doctor = doctorService.findById(dto.getDoctorId());
+        appointment.setDoctor(doctor);
+
+        appointment.setAppointmentDateTime(dto.getDate());
+        return MappingUtils.mapToAppointmentDto(appointmentRepository.save(appointment), currentUser);
     }
 }

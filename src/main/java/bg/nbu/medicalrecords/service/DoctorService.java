@@ -14,9 +14,11 @@ public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final UserService userService;
 
-    public DoctorService(DoctorRepository doctorRepository, UserService userService) {
+    private final AuthenticationService authenticationService;
+    public DoctorService(DoctorRepository doctorRepository, UserService userService, AuthenticationService authenticationService) {
         this.doctorRepository = doctorRepository;
         this.userService = userService;
+        this.authenticationService = authenticationService;
     }
 
 
@@ -76,5 +78,10 @@ public class DoctorService {
 
     public Doctor findById(Long id) {
         return doctorRepository.findById(id).orElseThrow(() -> new RuntimeException("Doctor not found"));
+    }
+
+    public Doctor findByPrincipal() {
+    User user = authenticationService.getCurrentUser();
+    return doctorRepository.findByKeycloakUserId(user.getKeycloakUserId());
     }
 }

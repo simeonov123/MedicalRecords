@@ -20,4 +20,5 @@ public class AppointmentDto implements Serializable {
     List<SickLeaveDto> sickLeaves;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    LocalDateTime appointmentDateTime;
 }

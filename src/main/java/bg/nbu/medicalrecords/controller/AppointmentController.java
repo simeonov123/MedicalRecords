@@ -28,7 +28,7 @@ public class AppointmentController {
     public ResponseEntity<List<AppointmentDto>> findAllForLoggedInUser() {
     return ResponseEntity.ok(appointmentService.findAllForLoggedInUser());
     }
-}
+
 
 
     /**
@@ -36,14 +36,14 @@ public class AppointmentController {
      * Patients can create an appointment for themselves.
      * Admin/doctor can create for any patient if that is in the business logic.
      */
-//    @PostMapping
-//    @PreAuthorize("hasAnyAuthority('patient', 'admin', 'doctor')")
-//    public ResponseEntity<Appointment> create(@RequestBody CreateAppointmentDto dto) {
-//        // The service will handle logic checking if patient is the same as principal or is admin
-//        Appointment created = appointmentService.createAppointment(dto);
-//        return ResponseEntity.ok(created);
-//    }
-
+    @PostMapping
+    @PreAuthorize("hasAnyAuthority('patient', 'admin', 'doctor')")
+    public ResponseEntity<AppointmentDto> create(@RequestBody CreateAppointmentDto dto) {
+        // The service will handle logic checking if patient is the same as principal or is admin
+        AppointmentDto created = appointmentService.createAppointment(dto);
+        return ResponseEntity.ok(created);
+    }
+}
     /**
      * Retrieve single appointment by ID.
      * A patient can see only their own appointments.

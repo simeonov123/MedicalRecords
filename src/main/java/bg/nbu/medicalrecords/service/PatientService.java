@@ -188,4 +188,9 @@ public class PatientService {
         }
         return mapToDto(patient);
     }
+
+    public Patient findPatientById(Long patientId) {
+        return patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + patientId));
+    }
 }

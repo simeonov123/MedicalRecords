@@ -1,7 +1,10 @@
 package bg.nbu.medicalrecords.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +29,14 @@ public class Diagnosis {
     // Many diagnoses belong to one appointment
     @ManyToOne
     @JoinColumn(name = "appointment_id", nullable = false)
+    @JsonIgnore
+    @ToString.Exclude
     private Appointment appointment;
 
     // One diagnosis can have many treatments
     @OneToMany(mappedBy = "diagnosis", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @ToString.Exclude
     private List<Treatment> treatments = new ArrayList<>();
 
     @PrePersist
