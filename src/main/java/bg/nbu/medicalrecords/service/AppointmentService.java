@@ -1,5 +1,6 @@
 package bg.nbu.medicalrecords.service;
 
+import bg.nbu.medicalrecords.controller.UpdateAppointmentDto;
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.AppointmentDto;
 import bg.nbu.medicalrecords.dto.CreateAppointmentDto;
@@ -74,5 +75,40 @@ public class AppointmentService {
 
     public void save(Appointment appointment) {
         appointmentRepository.save(appointment);
+    }
+
+    public AppointmentDto updateAppointment(Long appointmentId, UpdateAppointmentDto updateAppointmentDto) {
+        User currentUser = authenticationService.getCurrentUser();
+        Appointment appointment = findById(appointmentId);
+
+        if (currentUser.getRole().equals("doctor")) {
+            Doctor doctor = doctorService.findByPrincipal();
+
+            if (!appointment.getDoctor().getId().equals(doctor.getId())) {
+                throw new IllegalStateException("Doctor is not assigned to this appointment");
+            }
+
+
+        }else if(currentUser.getRole().equals("admin") & updateAppointmentDto.getDoctorId() != null) {
+            appointment.setDoctor(doctorService.findById(updateAppointmentDto.getDoctorId()));
+        }
+
+        appointment.setAppointmentDateTime(updateAppointmentDto.getAppointmentDateTime());
+
+        return MappingUtils.mapToAppointmentDto(appointmentRepository.save(appointment), currentUser);
+    }
+
+    public void deleteAppointment(Long appointmentId) {
+        User currentUser = authenticationService.getCurrentUser();
+
+        if (currentUser.getRole().equals("doctor")) {
+            Doctor doctor = doctorService.findByPrincipal();
+            Appointment appointment = findById(appointmentId);
+
+            if (!appointment.getDoctor().getId().equals(doctor.getId())) {
+                throw new IllegalStateException("Doctor is not assigned to this appointment");
+            }
+            appointmentRepository.delete(appointment);
+        }
     }
 }

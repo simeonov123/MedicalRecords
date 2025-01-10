@@ -50,6 +50,18 @@ public class AppointmentController {
         return ResponseEntity.ok(created);
     }
 
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AppointmentDto> updateAppointment(@PathVariable Long id, @RequestBody UpdateAppointmentDto updateAppointmentDto) {
+        return ResponseEntity.ok(appointmentService.updateAppointment(id, updateAppointmentDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
+        appointmentService.deleteAppointment(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{appointmentId}/sick-leave")
     @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
     public ResponseEntity<SickLeaveDto> createSickLeave(@PathVariable Long appointmentId, @RequestBody SickLeaveDto sickLeaveDto) {
