@@ -2,10 +2,7 @@ package bg.nbu.medicalrecords.controller;
 
 import bg.nbu.medicalrecords.domain.Diagnosis;
 import bg.nbu.medicalrecords.domain.SickLeave;
-import bg.nbu.medicalrecords.dto.AppointmentDto;
-import bg.nbu.medicalrecords.dto.CreateAppointmentDto;
-import bg.nbu.medicalrecords.dto.CreateDiagnosisDto;
-import bg.nbu.medicalrecords.dto.SickLeaveDto;
+import bg.nbu.medicalrecords.dto.*;
 import bg.nbu.medicalrecords.service.AppointmentService;
 import bg.nbu.medicalrecords.service.DiagnosisService;
 import bg.nbu.medicalrecords.service.SickLeaveService;
@@ -62,10 +59,42 @@ public class AppointmentController {
         return ResponseEntity.ok(MappingUtils.mapToSickLeaveDto(sickLeave));
     }
 
+
+    @PutMapping("/{appointmentId}/sick-leave/{sickLeaveId}")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
+    public ResponseEntity<SickLeaveDto> updateSickLeave(@PathVariable Long appointmentId, @RequestBody UpdateSickLeaveDto sickLeaveDto, @PathVariable Long sickLeaveId) {
+
+
+        SickLeave sickLeave = sickLeaveService.updateSickLeave(appointmentId, sickLeaveDto, sickLeaveId);
+        return ResponseEntity.ok(MappingUtils.mapToSickLeaveDto(sickLeave));
+    }
+
+    @DeleteMapping("/{appointmentId}/sick-leave/{sickLeaveId}")
+    public ResponseEntity<Void> deleteSickLeave(@PathVariable Long sickLeaveId, @PathVariable Long appointmentId) {
+        sickLeaveService.deleteSickLeave(sickLeaveId, appointmentId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{appointmentId}/diagnosis")
     @PreAuthorize("hasAuthority('doctor')")
     public ResponseEntity<Diagnosis> createDiagnosis(@PathVariable Long appointmentId, @RequestBody CreateDiagnosisDto createDiagnosisDto) {
         Diagnosis diagnosis = diagnosisService.createDiagnosis(appointmentId, createDiagnosisDto);
         return ResponseEntity.ok(diagnosis);
+    }
+
+    @PutMapping("/{appointmentId}/diagnosis/{diagnosisId}")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
+    public ResponseEntity<DiagnosisDto> updateDiagnosis(@PathVariable Long appointmentId, @RequestBody UpdateDiagnosisDto updateDiagnosisDto, @PathVariable Long diagnosisId) {
+
+
+        Diagnosis diagnosis = diagnosisService.updateDiagnosis(appointmentId, diagnosisId, updateDiagnosisDto);
+        return ResponseEntity.ok(MappingUtils.mapToDiagnosisDto(diagnosis));
+    }
+
+
+    @DeleteMapping("/{appointmentId}/diagnosis/{diagnosisId}")
+    public ResponseEntity<Void> deleteDiagnosis(@PathVariable Long diagnosisId, @PathVariable Long appointmentId) {
+        diagnosisService.deleteDiagnosis(diagnosisId, appointmentId);
+        return ResponseEntity.noContent().build();
     }
 }
