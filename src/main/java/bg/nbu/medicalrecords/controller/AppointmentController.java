@@ -36,6 +36,13 @@ public class AppointmentController {
     }
 
 
+    @GetMapping("/{patientId}/appointments")
+    @PreAuthorize("hasAnyAuthority( 'admin', 'doctor')")
+    public ResponseEntity<List<AppointmentDto>> findAllForPatient(@PathVariable Long patientId) {
+        return ResponseEntity.ok(appointmentService.findAllForPatient(patientId));
+    }
+
+
 
     /**
      * Create a new appointment.

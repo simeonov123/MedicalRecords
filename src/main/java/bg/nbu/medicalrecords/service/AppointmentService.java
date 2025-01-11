@@ -10,6 +10,7 @@ import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,14 +20,17 @@ public class AppointmentService {
     private final PatientRepository patientRepository;
     private final PatientService patientService;
     private final DoctorService doctorService;
+    private final UserService userService;
+
 
     public AppointmentService(AppointmentRepository appointmentRepository, AuthenticationService authenticationService,
-                              PatientRepository patientRepository, PatientService patientService, DoctorService doctorService) {
+                              PatientRepository patientRepository, PatientService patientService, DoctorService doctorService, UserService userService) {
         this.appointmentRepository = appointmentRepository;
         this.authenticationService = authenticationService;
         this.patientRepository = patientRepository;
         this.patientService = patientService;
         this.doctorService = doctorService;
+        this.userService = userService;
     }
 
 
@@ -110,5 +114,28 @@ public class AppointmentService {
             }
             appointmentRepository.delete(appointment);
         }
+    }
+
+    public List<AppointmentDto> findAllForPatient(Long patientId) {
+        User currentUser = authenticationService.getCurrentUser();
+
+        if (!currentUser.getRole().contains("admin") && !currentUser.getRole().contains("doctor")) {
+            throw new IllegalStateException("You are not allowed to view this patient's appointments");
+        }
+
+        List<Appointment> appointments = appointmentRepository.findByPatient_Id(patientId);
+
+        Optional<Patient> patient = patientRepository.findById(patientId);
+
+        String patientKeycloakUserId = patient.map(Patient::getKeycloakUserId).orElse(null);
+
+        if (patientKeycloakUserId == null) {
+            throw new IllegalStateException("Patient not found");
+        }
+
+        User patientUser = userService.findByKeycloakUserId(patientKeycloakUserId);
+
+
+        return appointments.stream().map(appointment -> MappingUtils.mapToAppointmentDto(appointment, patientUser)).collect(Collectors.toList());
     }
 }
