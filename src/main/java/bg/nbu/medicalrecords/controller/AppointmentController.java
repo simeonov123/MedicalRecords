@@ -1,11 +1,11 @@
 package bg.nbu.medicalrecords.controller;
 
 import bg.nbu.medicalrecords.domain.Diagnosis;
+import bg.nbu.medicalrecords.domain.Prescription;
 import bg.nbu.medicalrecords.domain.SickLeave;
+import bg.nbu.medicalrecords.domain.Treatment;
 import bg.nbu.medicalrecords.dto.*;
-import bg.nbu.medicalrecords.service.AppointmentService;
-import bg.nbu.medicalrecords.service.DiagnosisService;
-import bg.nbu.medicalrecords.service.SickLeaveService;
+import bg.nbu.medicalrecords.service.*;
 import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,10 +23,16 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
     private final SickLeaveService sickLeaveService;
     private final DiagnosisService diagnosisService;
-    public AppointmentController(AppointmentService appointmentService, SickLeaveService sickLeaveService, DiagnosisService diagnosisService) {
+    private final TreatmentService treatmentService;
+
+    private final PrescriptionService prescriptionService;
+
+    public AppointmentController(AppointmentService appointmentService, SickLeaveService sickLeaveService, DiagnosisService diagnosisService, TreatmentService treatmentService, PrescriptionService prescriptionService) {
         this.appointmentService = appointmentService;
         this.sickLeaveService = sickLeaveService;
         this.diagnosisService = diagnosisService;
+        this.treatmentService = treatmentService;
+        this.prescriptionService = prescriptionService;
     }
 
     @GetMapping("/getAppointmentsForLoggedInUser")
@@ -116,4 +122,24 @@ public class AppointmentController {
         diagnosisService.deleteDiagnosis(diagnosisId, appointmentId);
         return ResponseEntity.noContent().build();
     }
+
+    //http://localhost:8081/appointments/8/diagnosis/16/treatment
+    @PostMapping("/{appointmentId}/diagnosis/{diagnosisId}/treatment")
+    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
+    public ResponseEntity<Treatment> createTreatment(@PathVariable Long appointmentId, @RequestBody CreateTreatmentDto createTreatmentDto, @PathVariable Long diagnosisId) {
+        Treatment treatment = treatmentService.createTreatment(appointmentId, diagnosisId, createTreatmentDto);
+        return ResponseEntity.ok(treatment);
+    }
+
+
+    //appointments/11/treatments/5/prescriptions
+
+    @PostMapping("/{appointmentId}/treatments/{treatmentId}/prescriptions")
+    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
+    public ResponseEntity<PrescriptionDto> createPrescription(@PathVariable Long appointmentId, @PathVariable Long treatmentId, @RequestBody CreatePrescriptionDto createPrescriptionDto) {
+        Prescription prescription = prescriptionService.createPrescription(appointmentId, treatmentId, createPrescriptionDto);
+        return ResponseEntity.ok(MappingUtils.mapToPrescriptionDto(prescription));
+    }
+
+
 }

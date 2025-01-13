@@ -1,15 +1,15 @@
 package bg.nbu.medicalrecords.service;
 
-import bg.nbu.medicalrecords.domain.Appointment;
-import bg.nbu.medicalrecords.domain.Diagnosis;
-import bg.nbu.medicalrecords.domain.Doctor;
-import bg.nbu.medicalrecords.domain.User;
+import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.CreateDiagnosisDto;
+import bg.nbu.medicalrecords.dto.CreateTreatmentDto;
 import bg.nbu.medicalrecords.dto.UpdateDiagnosisDto;
 import bg.nbu.medicalrecords.repository.DiagnosisRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class DiagnosisService {
@@ -93,5 +93,14 @@ public class DiagnosisService {
 
         appointment.setUpdatedAt(LocalDateTime.now());
         appointmentService.save(appointment);
+    }
+
+    public Diagnosis findById(Long diagnosisId) {
+        return diagnosisRepository.findById(diagnosisId).orElseThrow(  () -> new IllegalStateException("Diagnosis not found"));
+
+    }
+
+    public Diagnosis save(Diagnosis diagnosis) {
+        return diagnosisRepository.save(diagnosis);
     }
 }
