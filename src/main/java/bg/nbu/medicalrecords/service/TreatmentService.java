@@ -5,6 +5,7 @@ import bg.nbu.medicalrecords.domain.Diagnosis;
 import bg.nbu.medicalrecords.domain.Treatment;
 import bg.nbu.medicalrecords.domain.User;
 import bg.nbu.medicalrecords.dto.CreateTreatmentDto;
+import bg.nbu.medicalrecords.dto.UpdateTreatmentDto;
 import bg.nbu.medicalrecords.repository.TreatmentRepository;
 import org.springframework.stereotype.Service;
 
@@ -70,5 +71,44 @@ public class TreatmentService {
     public Treatment save(Treatment treatment) {
         treatment.setUpdatedAt(LocalDateTime.now());
         return treatmentRepository.save(treatment);
+    }
+
+    public Treatment updateTreatment(Long appointmentId, Long treatmentId, UpdateTreatmentDto updateTreatmentDto) {
+        User currentUser = authenticationService.getCurrentUser();
+        Appointment appointment = appointmentService.findById(appointmentId);
+
+        if (currentUser.getRole().equals("doctor")) {
+            if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
+                throw new IllegalStateException("Doctor is not assigned to this appointment");
+            }
+        }
+
+        Treatment treatment = findById(treatmentId);
+        treatment.setDescription(updateTreatmentDto.getDescription());
+        treatment.setStartDate(updateTreatmentDto.getStartDate());
+        treatment.setEndDate(updateTreatmentDto.getEndDate());
+
+        return save(treatment);
+    }
+
+    public void deleteTreatment(Long appointmentId, Long treatmentId) {
+        User currentUser = authenticationService.getCurrentUser();
+        Appointment appointment = appointmentService.findById(appointmentId);
+
+        if (currentUser.getRole().equals("doctor")) {
+            if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
+                throw new IllegalStateException("Doctor is not assigned to this appointment");
+            }
+        }
+
+        Treatment treatment = findById(treatmentId);
+        Diagnosis diagnosis = treatment.getDiagnosis();
+        diagnosis.getTreatments().remove(treatment);
+        diagnosisService.save(diagnosis);
+
+        appointment.setUpdatedAt(LocalDateTime.now());
+        appointmentService.save(appointment);
+
+        treatmentRepository.delete(treatment);
     }
 }

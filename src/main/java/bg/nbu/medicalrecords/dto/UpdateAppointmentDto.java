@@ -1,4 +1,4 @@
-package bg.nbu.medicalrecords.controller;
+package bg.nbu.medicalrecords.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Value;

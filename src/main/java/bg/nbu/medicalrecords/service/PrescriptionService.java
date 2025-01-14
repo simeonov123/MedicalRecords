@@ -1,13 +1,12 @@
 package bg.nbu.medicalrecords.service;
 
+import bg.nbu.medicalrecords.dto.UpdatePrescriptionDto;
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.CreatePrescriptionDto;
 import bg.nbu.medicalrecords.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 @Service
 public class PrescriptionService {
@@ -71,5 +70,67 @@ public class PrescriptionService {
         appointmentService.save(appointment);
 
         return savedPrescription;
+    }
+
+    public Prescription updatePrescription(Long appointmentId, Long treatmentId, Long prescriptionId, UpdatePrescriptionDto updatePrescriptionDto) {
+        // Check if the appointment exists
+        Appointment appointment = appointmentService.findById(appointmentId);
+
+        // Check if the treatment exists
+        Treatment treatment = treatmentService.findById(treatmentId);
+
+        // Check if the prescription exists
+        Prescription prescription = prescriptionRepository.findById(prescriptionId).orElseThrow(() -> new IllegalStateException("Prescription not found"));
+
+        // Check if the user trying to update the prescription has the right to do so
+        User currentUser = authenticationService.getCurrentUser();
+
+        // Check if the user is a doctor and if they are the doctor that created the appointment
+        if (currentUser.getRole().equals("doctor")) {
+            if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
+                throw new IllegalStateException("Doctor is not assigned to this appointment");
+            }
+        }
+
+        prescription.setDosage(updatePrescriptionDto.getDosage());
+        prescription.setDuration(updatePrescriptionDto.getDuration());
+
+        Prescription savedPrescription = prescriptionRepository.save(prescription);
+
+        appointment.setUpdatedAt(LocalDateTime.now());
+        appointmentService.save(appointment);
+
+        return savedPrescription;
+
+    }
+
+    public void deletePrescription(Long appointmentId, Long treatmentId, Long prescriptionId) {
+        // Check if the appointment exists
+        Appointment appointment = appointmentService.findById(appointmentId);
+
+        // Check if the treatment exists
+        Treatment treatment = treatmentService.findById(treatmentId);
+
+        // Check if the prescription exists
+        Prescription prescription = prescriptionRepository.findById(prescriptionId).orElseThrow(() -> new IllegalStateException("Prescription not found"));
+
+        // Check if the user trying to delete the prescription has the right to do so
+        User currentUser = authenticationService.getCurrentUser();
+
+        // Check if the user is a doctor and if they are the doctor that created the appointment
+        if (currentUser.getRole().equals("doctor")) {
+            if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
+                throw new IllegalStateException("Doctor is not assigned to this appointment");
+            }
+        }
+
+        treatment.getPrescriptions().remove(prescription);
+        treatmentService.save(treatment);
+
+        prescriptionRepository.delete(prescription);
+
+        appointment.setUpdatedAt(LocalDateTime.now());
+        appointmentService.save(appointment);
+
     }
 }

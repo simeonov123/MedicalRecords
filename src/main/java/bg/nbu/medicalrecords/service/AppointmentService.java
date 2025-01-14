@@ -1,6 +1,6 @@
 package bg.nbu.medicalrecords.service;
 
-import bg.nbu.medicalrecords.controller.UpdateAppointmentDto;
+import bg.nbu.medicalrecords.dto.UpdateAppointmentDto;
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.AppointmentDto;
 import bg.nbu.medicalrecords.dto.CreateAppointmentDto;

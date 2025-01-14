@@ -142,4 +142,48 @@ public class AppointmentController {
     }
 
 
+    //Request URL:
+    //http://localhost:8081/appointments/11/treatments/10/prescriptions/14
+    //Request Method:
+    //PUT
+    @PutMapping("/{appointmentId}/treatments/{treatmentId}/prescriptions/{prescriptionId}")
+    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
+    public ResponseEntity<PrescriptionDto> updatePrescription(@PathVariable Long appointmentId, @PathVariable Long treatmentId, @PathVariable Long prescriptionId, @RequestBody UpdatePrescriptionDto updatePrescriptionDto) {
+        Prescription prescription = prescriptionService.updatePrescription(appointmentId, treatmentId, prescriptionId, updatePrescriptionDto);
+        return ResponseEntity.ok(MappingUtils.mapToPrescriptionDto(prescription));
+    }
+
+
+    //Request URL:
+    //http://localhost:8081/appointments/11/treatments/10/prescriptions/14
+    //Request Method:
+    //DELETE
+    @DeleteMapping("/{appointmentId}/treatments/{treatmentId}/prescriptions/{prescriptionId}")
+    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
+    public ResponseEntity<Void> deletePrescription(@PathVariable Long appointmentId, @PathVariable Long treatmentId, @PathVariable Long prescriptionId) {
+        prescriptionService.deletePrescription(appointmentId, treatmentId, prescriptionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    //Request URL:
+    //http://localhost:8081/appointments/11/treatments/11
+    //Request Method:
+    //PUT
+    @PutMapping("/{appointmentId}/treatments/{treatmentId}")
+    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
+    public ResponseEntity<Treatment> updateTreatment(@PathVariable Long appointmentId, @PathVariable Long treatmentId, @RequestBody UpdateTreatmentDto updateTreatmentDto) {
+        Treatment treatment = treatmentService.updateTreatment(appointmentId, treatmentId, updateTreatmentDto);
+        return ResponseEntity.ok(treatment);
+    }
+
+    //Request URL:
+    //http://localhost:8081/appointments/11/treatments/11
+    //Request Method:
+    //DELETE
+    @DeleteMapping("/{appointmentId}/treatments/{treatmentId}")
+    @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
+    public ResponseEntity<Void> deleteTreatment(@PathVariable Long appointmentId, @PathVariable Long treatmentId) {
+        treatmentService.deleteTreatment(appointmentId, treatmentId);
+        return ResponseEntity.noContent().build();
+    }
 }
