@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -102,5 +103,13 @@ public class DiagnosisService {
 
     public Diagnosis save(Diagnosis diagnosis) {
         return diagnosisRepository.save(diagnosis);
+    }
+
+
+    public List<String> getUniqueDiagnosis() {
+        //We should want the unique diagnosis to be queried by their statements.
+        //We should not want to return the same diagnosis statement multiple times.
+        //We should want to return a list of distinct diagnosis statements.
+        return diagnosisRepository.findDistinctStatements();
     }
 }
