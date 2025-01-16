@@ -63,4 +63,12 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully");
     }
 
+
+    //Trigger a sync of keycloak user with local user
+    //The idea is that admins are able to sync users from keycloak to the local database
+    @PostMapping("/sync")
+    public ResponseEntity<String> syncUsers() {
+        keycloakService.syncUsers();
+        return ResponseEntity.ok("Sync started");
+    }
 }

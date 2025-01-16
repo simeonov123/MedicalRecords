@@ -46,7 +46,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8082", "http://localhost:54284", "http://localhost:51828", "http://localhost:50595", "http://localhost:63776", "http://localhost:59037", "http://localhost:54401/", "http://localhost:51427", "http://localhost:62770", "http://localhost:51147/", "http://localhost:50951", "http://localhost:59739", "http://localhost:58617", "http://localhost:58617", "http://localhost:50820", "http://localhost:61035", "http://localhost:61922", "http://localhost:58264")); // Update with your client's origin
+        configuration.setAllowedOrigins(List.of("http://localhost:8082", "http://localhost:51475", "http://localhost:54284", "http://localhost:51828", "http://localhost:50595", "http://localhost:63776", "http://localhost:59037", "http://localhost:54401/", "http://localhost:51427", "http://localhost:62770", "http://localhost:51147/", "http://localhost:50951", "http://localhost:59739", "http://localhost:58617", "http://localhost:58617", "http://localhost:50820", "http://localhost:61035", "http://localhost:61922", "http://localhost:58264")); // Update with your client's origin
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);

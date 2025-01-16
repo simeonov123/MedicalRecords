@@ -2,7 +2,7 @@
 package bg.nbu.medicalrecords.controller;
 
 import bg.nbu.medicalrecords.dto.KeycloakUserDto;
-import bg.nbu.medicalrecords.service.KeycloakUserService;
+import bg.nbu.medicalrecords.service.KeycloakService;
 import bg.nbu.medicalrecords.service.LocalSyncService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,13 +14,14 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final KeycloakUserService keycloakUserService;
+    private final KeycloakService keycloakService;
     private final LocalSyncService localSyncService;
 
-    public UserController(KeycloakUserService keycloakUserService, LocalSyncService localSyncService) {
-        this.keycloakUserService = keycloakUserService;
+    public UserController(KeycloakService keycloakService, LocalSyncService localSyncService) {
+        this.keycloakService = keycloakService;
         this.localSyncService = localSyncService;
     }
+
 
     /**
      * List all Keycloak users + their roles + emailVerified
@@ -28,7 +29,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<List<KeycloakUserDto>> fetchAllUsers() {
-        List<KeycloakUserDto> users = keycloakUserService.fetchAllUsers();
+        List<KeycloakUserDto> users = keycloakService.fetchAllUsers();
         return ResponseEntity.ok(users);
     }
 
@@ -41,7 +42,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody RoleRequest request
     ) {
-        keycloakUserService.updateUserRole(userId, request.role());
+        keycloakService.updateUserRole(userId, request.role());
         localSyncService.handleRoleChange(userId, request.role());
 
         return ResponseEntity.ok().build();
@@ -56,7 +57,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestParam boolean verified
     ) {
-        keycloakUserService.setUserEmailVerified(userId, verified);
+        keycloakService.setUserEmailVerified(userId, verified);
         return ResponseEntity.ok().build();
     }
 
@@ -66,7 +67,7 @@ public class UserController {
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
-        keycloakUserService.deleteUser(userId);
+        keycloakService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -79,7 +80,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody KeycloakUserDto dto
     ) {
-        keycloakUserService.updateUserDetails(userId, dto);
+        keycloakService.updateUserDetails(userId, dto);
         return ResponseEntity.ok().build();
     }
 

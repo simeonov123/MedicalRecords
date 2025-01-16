@@ -126,8 +126,8 @@ public class AppointmentController {
     //http://localhost:8081/appointments/8/diagnosis/16/treatment
     @PostMapping("/{appointmentId}/diagnosis/{diagnosisId}/treatment")
     @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
-    public ResponseEntity<Treatment> createTreatment(@PathVariable Long appointmentId, @RequestBody CreateTreatmentDto createTreatmentDto, @PathVariable Long diagnosisId) {
-        Treatment treatment = treatmentService.createTreatment(appointmentId, diagnosisId, createTreatmentDto);
+    public ResponseEntity<TreatmentDto> createTreatment(@PathVariable Long appointmentId, @RequestBody CreateTreatmentDto createTreatmentDto, @PathVariable Long diagnosisId) {
+        TreatmentDto treatment = treatmentService.createTreatment(appointmentId, diagnosisId, createTreatmentDto);
         return ResponseEntity.ok(treatment);
     }
 
@@ -171,8 +171,8 @@ public class AppointmentController {
     //PUT
     @PutMapping("/{appointmentId}/treatments/{treatmentId}")
     @PreAuthorize("hasAnyAuthority('doctor', 'admin')")
-    public ResponseEntity<Treatment> updateTreatment(@PathVariable Long appointmentId, @PathVariable Long treatmentId, @RequestBody UpdateTreatmentDto updateTreatmentDto) {
-        Treatment treatment = treatmentService.updateTreatment(appointmentId, treatmentId, updateTreatmentDto);
+    public ResponseEntity<TreatmentDto> updateTreatment(@PathVariable Long appointmentId, @PathVariable Long treatmentId, @RequestBody UpdateTreatmentDto updateTreatmentDto) {
+        TreatmentDto treatment = treatmentService.updateTreatment(appointmentId, treatmentId, updateTreatmentDto);
         return ResponseEntity.ok(treatment);
     }
 

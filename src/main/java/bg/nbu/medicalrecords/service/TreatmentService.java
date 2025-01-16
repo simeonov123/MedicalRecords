@@ -5,8 +5,10 @@ import bg.nbu.medicalrecords.domain.Diagnosis;
 import bg.nbu.medicalrecords.domain.Treatment;
 import bg.nbu.medicalrecords.domain.User;
 import bg.nbu.medicalrecords.dto.CreateTreatmentDto;
+import bg.nbu.medicalrecords.dto.TreatmentDto;
 import bg.nbu.medicalrecords.dto.UpdateTreatmentDto;
 import bg.nbu.medicalrecords.repository.TreatmentRepository;
+import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,7 +31,7 @@ public class TreatmentService {
         this.treatmentRepository = treatmentRepository;
     }
 
-    public Treatment createTreatment(Long appointmentId, Long diagnosisId, CreateTreatmentDto createTreatmentDto) {
+    public TreatmentDto createTreatment(Long appointmentId, Long diagnosisId, CreateTreatmentDto createTreatmentDto) {
         User currentUser = authenticationService.getCurrentUser();
         Appointment appointment = appointmentService.findById(appointmentId);
 
@@ -61,7 +63,7 @@ public class TreatmentService {
         appointmentService.save(appointment);
 
 
-        return treatment;
+        return MappingUtils.mapToTreatmentDto(treatment);
     }
 
     public Treatment findById(Long treatmentId) {
@@ -73,7 +75,7 @@ public class TreatmentService {
         return treatmentRepository.save(treatment);
     }
 
-    public Treatment updateTreatment(Long appointmentId, Long treatmentId, UpdateTreatmentDto updateTreatmentDto) {
+    public TreatmentDto updateTreatment(Long appointmentId, Long treatmentId, UpdateTreatmentDto updateTreatmentDto) {
         User currentUser = authenticationService.getCurrentUser();
         Appointment appointment = appointmentService.findById(appointmentId);
 
@@ -88,7 +90,7 @@ public class TreatmentService {
         treatment.setStartDate(updateTreatmentDto.getStartDate());
         treatment.setEndDate(updateTreatmentDto.getEndDate());
 
-        return save(treatment);
+        return MappingUtils.mapToTreatmentDto(save(treatment));
     }
 
     public void deleteTreatment(Long appointmentId, Long treatmentId) {
