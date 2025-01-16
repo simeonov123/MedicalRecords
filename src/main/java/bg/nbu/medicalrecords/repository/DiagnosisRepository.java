@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface DiagnosisRepository extends JpaRepository<Diagnosis, Long> {
     @Query("SELECT DISTINCT d.statement FROM Diagnosis d")
-    List<String> findDistinctStatements();}
+    List<String> findDistinctStatements();
+
+    List<Diagnosis> findByStatementIgnoreCase(String statement);
+}

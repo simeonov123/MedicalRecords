@@ -1,14 +1,13 @@
 package bg.nbu.medicalrecords.service;
 
-import bg.nbu.medicalrecords.domain.Doctor;
-import bg.nbu.medicalrecords.domain.Patient;
-import bg.nbu.medicalrecords.domain.User;
+import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.CreatePatientDto;
 import bg.nbu.medicalrecords.dto.PatientDto;
 import bg.nbu.medicalrecords.dto.UpdatePatientDto;
 import bg.nbu.medicalrecords.exception.ResourceNotFoundException;
 import bg.nbu.medicalrecords.repository.DoctorRepository;
 import bg.nbu.medicalrecords.repository.PatientRepository;
+import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +22,7 @@ public class PatientService {
 
     private final UserService userService;
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UserService userService) {
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UserService userService ) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.userService = userService;
@@ -192,5 +191,9 @@ public class PatientService {
     public Patient findPatientById(Long patientId) {
         return patientRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + patientId));
+    }
+
+    public long count() {
+        return patientRepository.count();
     }
 }

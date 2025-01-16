@@ -112,4 +112,12 @@ public class DiagnosisService {
         //We should want to return a list of distinct diagnosis statements.
         return diagnosisRepository.findDistinctStatements();
     }
+
+    public List<Diagnosis> findByStatement(String statement) {
+        return diagnosisRepository.findByStatementIgnoreCase(statement);
+    }
+
+    public long count() {
+        return diagnosisRepository.count();
+    }
 }

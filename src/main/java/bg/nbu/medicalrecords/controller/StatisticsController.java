@@ -1,5 +1,6 @@
 package bg.nbu.medicalrecords.controller;
 
+import bg.nbu.medicalrecords.dto.DiagnosisStatisticsDto;
 import bg.nbu.medicalrecords.service.StatisticsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,5 +27,16 @@ public class StatisticsController {
     @GetMapping("/diagnoses/unique")
     public ResponseEntity<List<String>> getUniqueDiagnosis() {
         return ResponseEntity.ok(statisticsService.getUniqueDiagnosis());
+    }
+
+
+//    Request URL:
+//    http://localhost:8081/statistics/diagnosis/leaderboard
+//    Request Method:
+//    GET
+
+    @GetMapping("/diagnoses/leaderboard")
+    public ResponseEntity<DiagnosisStatisticsDto> getDiagnosisLeaderboard() {
+        return ResponseEntity.ok(statisticsService.getDiagnosisLeaderboard());
     }
 }

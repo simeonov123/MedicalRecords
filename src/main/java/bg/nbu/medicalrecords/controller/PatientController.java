@@ -4,6 +4,7 @@ import bg.nbu.medicalrecords.dto.CreatePatientDto;
 import bg.nbu.medicalrecords.dto.PatientDto;
 import bg.nbu.medicalrecords.dto.UpdatePatientDto;
 import bg.nbu.medicalrecords.service.PatientService;
+import bg.nbu.medicalrecords.service.StatisticsService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,9 +17,11 @@ import java.util.Map;
 @RequestMapping("/patients")
 public class PatientController {
     private final PatientService patientService;
+    private final StatisticsService statisticsService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, StatisticsService statisticsService) {
         this.patientService = patientService;
+        this.statisticsService = statisticsService;
     }
 
     @PostMapping
@@ -44,6 +47,13 @@ public class PatientController {
     @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
     public ResponseEntity<List<PatientDto>> findAll() {
         return ResponseEntity.ok(patientService.findAll());
+    }
+
+
+    @GetMapping("/searchByDiagnosis")
+    @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
+    public ResponseEntity<List<PatientDto>> findAllByStatement(@RequestParam String diagnosis) {
+        return ResponseEntity.ok(statisticsService.findAllByStatement(diagnosis));
     }
 
     @GetMapping("/{id}")
