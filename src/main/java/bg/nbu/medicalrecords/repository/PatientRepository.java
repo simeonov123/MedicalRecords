@@ -3,6 +3,7 @@ package bg.nbu.medicalrecords.repository;
 import bg.nbu.medicalrecords.domain.Patient;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PatientRepository extends JpaRepository<Patient, Long> {
@@ -11,5 +12,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Patient findByKeycloakUserId(String keycloakUserId);
     void deleteByKeycloakUserId(String keycloakUserId);
 
+    List<Patient> findByPrimaryDoctor_Id(Long id);
 
 }

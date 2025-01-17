@@ -196,4 +196,12 @@ public class PatientService {
     public long count() {
         return patientRepository.count();
     }
+
+
+    public List<PatientDto> findAllByPrimaryDoctorId(Long doctorId) {
+        List<Patient> patients = patientRepository.findByPrimaryDoctor_Id(doctorId);
+        return patients.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 }
