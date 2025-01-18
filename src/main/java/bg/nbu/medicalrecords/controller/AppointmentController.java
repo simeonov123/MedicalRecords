@@ -7,10 +7,12 @@ import bg.nbu.medicalrecords.domain.Treatment;
 import bg.nbu.medicalrecords.dto.*;
 import bg.nbu.medicalrecords.service.*;
 import bg.nbu.medicalrecords.util.MappingUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -185,5 +187,18 @@ public class AppointmentController {
     public ResponseEntity<Void> deleteTreatment(@PathVariable Long appointmentId, @PathVariable Long treatmentId) {
         treatmentService.deleteTreatment(appointmentId, treatmentId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    //Request URL:
+    //http://localhost:8081/appointments/doctor/1?startDate=2025-01-01T00:00:00.000&endDate=2025-01-31T00:00:00.000
+    //Request Method:
+    //GET
+
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsForDoctorInPeriod(@PathVariable Long doctorId,
+                                                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsForDoctorInPeriod(doctorId, startDate, endDate));
     }
 }

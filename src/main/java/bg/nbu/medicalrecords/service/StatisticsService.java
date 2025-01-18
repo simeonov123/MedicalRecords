@@ -1,15 +1,11 @@
 package bg.nbu.medicalrecords.service;
 
-import bg.nbu.medicalrecords.domain.Diagnosis;
-import bg.nbu.medicalrecords.domain.Appointment;
-import bg.nbu.medicalrecords.domain.Patient;
-import bg.nbu.medicalrecords.domain.User;
-import bg.nbu.medicalrecords.dto.DiagnosisDetailsDto;
-import bg.nbu.medicalrecords.dto.DiagnosisStatisticsDto;
-import bg.nbu.medicalrecords.dto.PatientDto;
+import bg.nbu.medicalrecords.domain.*;
+import bg.nbu.medicalrecords.dto.*;
 import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,11 +18,15 @@ public class StatisticsService {
     public final PatientService patientService;
 
     public final UserService userService;
+    public final DoctorService doctorService;
 
-    public StatisticsService(DiagnosisService diagnosisService, PatientService patientService, UserService userService) {
+    public final AppointmentService appointmentService;
+    public StatisticsService(DiagnosisService diagnosisService, PatientService patientService, UserService userService, DoctorService doctorService, AppointmentService appointmentService) {
         this.diagnosisService = diagnosisService;
         this.patientService = patientService;
         this.userService = userService;
+        this.doctorService = doctorService;
+        this.appointmentService = appointmentService;
     }
 
 
@@ -104,5 +104,78 @@ public class StatisticsService {
         }
 
         return patientDtos;
+    }
+
+    public List<DoctorPatientCountDto> getDoctorsWithPatientCount() {
+        //get all doctors
+        List<Doctor> doctors = doctorService.findAll();
+
+        //for every doctor get the number of patient by using the doctor id to get patients with that doctor
+        //then create a DoctorPatientCountDto object with the doctor's name and the number of patients
+        List<DoctorPatientCountDto> doctorPatientCountDtos = new ArrayList<>();
+
+        for (Doctor doctor : doctors) {
+            List<PatientDto> patients = patientService.findAllByPrimaryDoctorId(doctor.getId());
+            DoctorPatientCountDto doctorPatientCountDto = new DoctorPatientCountDto();
+            doctorPatientCountDto.setDoctorName(doctor.getName());
+            doctorPatientCountDto.setCount((long) patients.size());
+            doctorPatientCountDtos.add(doctorPatientCountDto);
+        }
+
+        return doctorPatientCountDtos;
+    }
+
+    public List<DoctorAppointmentsCount> getDoctorsWithAppointmentsCount() {
+        //get all doctors
+        List<Doctor> doctors = doctorService.findAll();
+
+        //for every doctor get the number of appointments by using the doctor id to get appointments with that doctor
+        //then create a DoctorAppointmentsCount object with the doctor's name and the number of appointments
+        List<DoctorAppointmentsCount> doctorAppointmentsCounts = new ArrayList<>();
+
+        for (Doctor doctor : doctors) {
+            List<Appointment> appointments = appointmentService.findAllByDoctorId(doctor.getId());
+            DoctorAppointmentsCount doctorAppointmentsCount = new DoctorAppointmentsCount();
+            doctorAppointmentsCount.setDoctorName(doctor.getName());
+            doctorAppointmentsCount.setCount((long) appointments.size());
+            doctorAppointmentsCounts.add(doctorAppointmentsCount);
+        }
+
+        return doctorAppointmentsCounts;
+    }
+
+    public List<DoctorsThatHaveAppointmentsInPeriod> getDoctorsWithAppointmentsInPeriod(LocalDateTime startDate, LocalDateTime endDate) {
+        //get all doctors
+        List<Doctor> doctors = doctorService.findAll();
+
+        //for every doctor get the appointments that are in between the start and end date (the appointment has the appointmentDateTime field)
+        //then create a DoctorsThatHaveAppointmentsInPeriod object with the doctor's name, doctor's id and the start and end date.
+
+        //we create the list of DoctorsThatHaveAppointmentsInPeriod objects
+        List<DoctorsThatHaveAppointmentsInPeriod> doctorsThatHaveAppointmentsInPeriodList = new ArrayList<>();
+
+        for (Doctor doctor : doctors) {
+            List<Appointment> appointments = appointmentService.findAllByDoctorId(doctor.getId());
+            List<Appointment> appointmentsInPeriod = appointments.stream()
+                    .filter(appointment -> appointment.getAppointmentDateTime().isAfter(startDate) && appointment.getAppointmentDateTime().isBefore(endDate))
+                    .toList();
+
+            //if appointmentsInPeriod is empty we continue to the next doctor
+            if (appointmentsInPeriod.isEmpty()) {
+                continue;
+            }
+
+            //if its not empty we add the doctors data to the return dto object in the list
+            DoctorsThatHaveAppointmentsInPeriod doctorsThatHaveAppointmentsInPeriod = new DoctorsThatHaveAppointmentsInPeriod();
+            doctorsThatHaveAppointmentsInPeriod.setDoctorName(doctor.getName());
+            doctorsThatHaveAppointmentsInPeriod.setDoctorId(doctor.getId());
+            doctorsThatHaveAppointmentsInPeriod.setStartDate(startDate.toLocalDate());
+            doctorsThatHaveAppointmentsInPeriod.setEndDate(endDate.toLocalDate());
+
+            doctorsThatHaveAppointmentsInPeriodList.add(doctorsThatHaveAppointmentsInPeriod);
+        }
+
+
+        return doctorsThatHaveAppointmentsInPeriodList;
     }
 }

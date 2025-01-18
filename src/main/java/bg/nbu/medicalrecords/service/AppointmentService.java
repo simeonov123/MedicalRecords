@@ -9,6 +9,7 @@ import bg.nbu.medicalrecords.repository.PatientRepository;
 import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -137,5 +138,18 @@ public class AppointmentService {
 
 
         return appointments.stream().map(appointment -> MappingUtils.mapToAppointmentDto(appointment, patientUser)).collect(Collectors.toList());
+    }
+
+    public List<Appointment> findAllByDoctorId(Long id) {
+        return appointmentRepository.findByDoctor_Id(id);
+    }
+
+    public List<AppointmentDto> getAppointmentsForDoctorInPeriod(Long doctorId, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Appointment> appointments = appointmentRepository.findByDoctor_Id(doctorId);
+
+        return appointments.stream()
+                .filter(appointment -> appointment.getAppointmentDateTime().isAfter(startDate) && appointment.getAppointmentDateTime().isBefore(endDate))
+                .map(appointment -> MappingUtils.mapToAppointmentDto(appointment, userService.findByKeycloakUserId(appointment.getPatient().getKeycloakUserId())))
+                .collect(Collectors.toList());
     }
 }
