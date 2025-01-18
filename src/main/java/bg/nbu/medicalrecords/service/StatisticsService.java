@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StatisticsService {
@@ -21,12 +23,15 @@ public class StatisticsService {
     public final DoctorService doctorService;
 
     public final AppointmentService appointmentService;
-    public StatisticsService(DiagnosisService diagnosisService, PatientService patientService, UserService userService, DoctorService doctorService, AppointmentService appointmentService) {
+
+    public final SickLeaveService sickLeaveService;
+    public StatisticsService(DiagnosisService diagnosisService, PatientService patientService, UserService userService, DoctorService doctorService, AppointmentService appointmentService, SickLeaveService sickLeaveService) {
         this.diagnosisService = diagnosisService;
         this.patientService = patientService;
         this.userService = userService;
         this.doctorService = doctorService;
         this.appointmentService = appointmentService;
+        this.sickLeaveService = sickLeaveService;
     }
 
 
@@ -177,5 +182,107 @@ public class StatisticsService {
 
 
         return doctorsThatHaveAppointmentsInPeriodList;
+    }
+
+    public MostSickLeavesMonthData getMostSickLeavesMonthData() {
+        // Get all sick leaves
+        List<SickLeave> sickLeaves = sickLeaveService.findAllSickLeaves();
+
+        // Get the current year
+        int currentYear = LocalDateTime.now().getYear();
+
+        // Find the month with the most sick leaves for the current year
+        Map<Integer, Long> sickLeavesCountByMonth = sickLeaves.stream()
+                .filter(sickLeave -> sickLeave.getStartDate().getYear() == currentYear)
+                .collect(Collectors.groupingBy(sickLeave -> sickLeave.getStartDate().getMonthValue(), Collectors.counting()));
+
+        int mostSickLeavesMonth = sickLeavesCountByMonth.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(0);
+
+        long mostSickLeavesCount = sickLeavesCountByMonth.getOrDefault(mostSickLeavesMonth, 0L);
+
+        // Get the month name
+        String monthName = switch (mostSickLeavesMonth) {
+            case 1 -> "January";
+            case 2 -> "February";
+            case 3 -> "March";
+            case 4 -> "April";
+            case 5 -> "May";
+            case 6 -> "June";
+            case 7 -> "July";
+            case 8 -> "August";
+            case 9 -> "September";
+            case 10 -> "October";
+            case 11 -> "November";
+            case 12 -> "December";
+            default -> null;
+        };
+
+        // Get all appointments for the month with the most sick leaves
+        List<Appointment> allAppointmentsForMostSickLeavesMonth = appointmentService.findAll().stream()
+                .filter(appointment -> appointment.getAppointmentDateTime().getMonthValue() == mostSickLeavesMonth && appointment.getAppointmentDateTime().getYear() == currentYear)
+                .toList();
+
+        // Get diagnosis statements for the month with the most sick leaves
+        List<String> diagnosisStatements = allAppointmentsForMostSickLeavesMonth.stream()
+                .flatMap(appointment -> appointment.getDiagnoses().stream())
+                .map(Diagnosis::getStatement)
+                .toList();
+
+        // Find the most common diagnosis statement
+        String mostCommonDiagnosis = diagnosisStatements.stream()
+                .collect(Collectors.groupingBy(statement -> statement, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        // Count unique patients for the month with the most sick leaves
+        long uniquePatientsCount = allAppointmentsForMostSickLeavesMonth.stream()
+                .map(Appointment::getPatient)
+                .distinct()
+                .count();
+
+        // Create and return the MostSickLeavesMonthData object
+        MostSickLeavesMonthData mostSickLeavesMonthData = new MostSickLeavesMonthData();
+        mostSickLeavesMonthData.setMonthName(monthName);
+        mostSickLeavesMonthData.setSickLeavesCount((int) mostSickLeavesCount);
+        mostSickLeavesMonthData.setAppointmentsThatMonthCount(allAppointmentsForMostSickLeavesMonth.size());
+        mostSickLeavesMonthData.setUniquePatientsCount((int) uniquePatientsCount);
+        mostSickLeavesMonthData.setMostCommonDiagnosisThatMonth(mostCommonDiagnosis);
+
+        return mostSickLeavesMonthData;
+    }
+
+    public List<DoctorsSickLeavesLeaderboardDto> getDoctorsSickLeavesLeaderboard() {
+        // Get all doctors
+        List<Doctor> doctors = doctorService.findAll();
+        List<DoctorsSickLeavesLeaderboardDto> leaderboard = new ArrayList<>();
+
+        // Get all appointments
+        List<Appointment> appointments = appointmentService.findAll();
+
+        // For each doctor, count the number of sick leaves
+        for (Doctor doctor : doctors) {
+            long sickLeavesCount = appointments.stream()
+                    .filter(appointment -> appointment.getDoctor().getId().equals(doctor.getId()))
+                    .flatMap(appointment -> appointment.getSickLeaves().stream())
+                    .count();
+
+            // Create a DTO and set the values
+            DoctorsSickLeavesLeaderboardDto dto = new DoctorsSickLeavesLeaderboardDto();
+            dto.setName(doctor.getName());
+            dto.setSpecialties(doctor.getSpecialties());
+            dto.setPrimaryCare(doctor.isPrimaryCare());
+            dto.setSickLeavesCount((int) sickLeavesCount);
+            leaderboard.add(dto);
+        }
+
+        // Sort the leaderboard by sick leaves count in descending order
+        leaderboard.sort(Comparator.comparingInt(DoctorsSickLeavesLeaderboardDto::getSickLeavesCount).reversed());
+
+        return leaderboard;
     }
 }

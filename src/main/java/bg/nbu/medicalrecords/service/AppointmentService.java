@@ -7,6 +7,7 @@ import bg.nbu.medicalrecords.dto.CreateAppointmentDto;
 import bg.nbu.medicalrecords.repository.AppointmentRepository;
 import bg.nbu.medicalrecords.repository.PatientRepository;
 import bg.nbu.medicalrecords.util.MappingUtils;
+import com.opencsv.bean.CsvToBean;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -151,5 +152,9 @@ public class AppointmentService {
                 .filter(appointment -> appointment.getAppointmentDateTime().isAfter(startDate) && appointment.getAppointmentDateTime().isBefore(endDate))
                 .map(appointment -> MappingUtils.mapToAppointmentDto(appointment, userService.findByKeycloakUserId(appointment.getPatient().getKeycloakUserId())))
                 .collect(Collectors.toList());
+    }
+
+    public List<Appointment> findAll() {
+        return appointmentRepository.findAll();
     }
 }

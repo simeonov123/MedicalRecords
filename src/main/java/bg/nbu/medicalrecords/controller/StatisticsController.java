@@ -84,5 +84,20 @@ public class StatisticsController {
         return ResponseEntity.ok(statisticsService.getDoctorsWithAppointmentsInPeriod(startDate, endDate));
     }
 
+//Request URL:
+//http://localhost:8081/statistics/most-sick-leaves-month-data
+//Request Method:
+//GET
 
+    @GetMapping("/most-sick-leaves-month-data")
+    public ResponseEntity<MostSickLeavesMonthData> getMostSickLeavesMonthData() {
+        return ResponseEntity.ok(statisticsService.getMostSickLeavesMonthData());
+    }
+
+
+    @GetMapping("/doctors-sick-leaves-leaderboard")
+    public ResponseEntity<List<DoctorsSickLeavesLeaderboardDto>> getDoctorsSickLeavesLeaderboard() {
+        List<DoctorsSickLeavesLeaderboardDto> leaderboard = statisticsService.getDoctorsSickLeavesLeaderboard();
+        return ResponseEntity.ok(leaderboard);
+    }
 }
