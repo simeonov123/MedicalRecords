@@ -31,11 +31,27 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.createDoctor(doctor));
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody Doctor updated) {
-        return ResponseEntity.ok(doctorService.updateDoctor(id, updated));
+//    @PutMapping("/{id}")
+//    @PreAuthorize("hasAuthority('admin')")
+//    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody Doctor updated) {
+//        return ResponseEntity.ok(doctorService.updateDoctor(id, updated));
+//    }
+
+    // // New method: Update doctor by Keycloak User ID
+    //    final response = await _apiService.put(
+    //      '/doctors/${doc.keycloakUserId}',
+    //      body: {
+    //        "primaryCare": doc.primaryCare,
+    //        "specialties": doc.specialties.isEmpty ? "N/A" : doc.specialties,
+    //      },
+    //    );
+
+    @PutMapping("/{keycloakUserId}")
+    @PreAuthorize("hasAnyAuthority('admin')")
+    public ResponseEntity<Doctor> updateByKeycloakUserId(@PathVariable String keycloakUserId, @RequestBody Doctor updated) {
+        return ResponseEntity.ok(doctorService.updateDoctorByKeycloakUserId(keycloakUserId, updated));
     }
+
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")

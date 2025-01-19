@@ -1,10 +1,9 @@
-// src/main/java/bg/nbu/medicalrecords/dto/KeycloakUserDto.java
 package bg.nbu.medicalrecords.dto;
 
 import lombok.Data;
 
 @Data
-public class KeycloakUserDto {
+public class KeycloakPlusLocalUserDto {
     private String id;
     private String username;
     private String email;

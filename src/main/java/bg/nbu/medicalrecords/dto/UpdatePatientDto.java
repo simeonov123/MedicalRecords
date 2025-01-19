@@ -6,10 +6,9 @@ import lombok.Data;
 
 @Data
 public class UpdatePatientDto {
-    @NotBlank
+
     private String name;
 
-    @NotBlank
     private String egn;
 
     @NotNull

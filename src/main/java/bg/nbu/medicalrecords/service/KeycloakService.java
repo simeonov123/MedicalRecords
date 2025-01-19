@@ -3,6 +3,7 @@
 package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.User;
+import bg.nbu.medicalrecords.dto.KeycloakPlusLocalUserDto;
 import bg.nbu.medicalrecords.dto.KeycloakUserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -434,6 +435,17 @@ public class KeycloakService {
         ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Failed to update user details in Keycloak");
+        }
+
+        User user = userService.findByKeycloakUserId(userId);
+        if (user != null) {
+            if (dto.getEgn() != null && !dto.getEgn().isEmpty()) {
+                user.setEgn(dto.getEgn());
+            }
+            user.setEmail(dto.getEmail());
+            user.setFirstName(dto.getFirstName());
+            user.setLastName(dto.getLastName());
+            userService.updateUser(user);
         }
     }
 

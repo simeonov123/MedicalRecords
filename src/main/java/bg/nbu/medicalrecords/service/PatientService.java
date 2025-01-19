@@ -75,21 +75,21 @@ public class PatientService {
         return mapToDto(p);
     }
 
-    public PatientDto updatePatient(Long id, UpdatePatientDto dto) {
-        Patient p = patientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
-
-        p.setName(dto.getName());
-        p.setHealthInsurancePaid(dto.getHealthInsurancePaid());
-
-        if (dto.getPrimaryDoctorId() != null) {
+    public PatientDto updatePatient(String id, UpdatePatientDto dto) {
+        Patient p = patientRepository.findByKeycloakUserId(id);
+        if (p == null) {
+            throw new ResourceNotFoundException("Patient not found with keycloakUserId: " + id);
+        }
+        User user = userService.findByKeycloakUserId(p.getKeycloakUserId());
+        p.setName(user.getFirstName() + " " + user.getLastName());
+        if (dto.getHealthInsurancePaid() != null){
+            p.setHealthInsurancePaid(dto.getHealthInsurancePaid());
+        }
+        if (dto.getPrimaryDoctorId() != null && dto.getPrimaryDoctorId() != 0) {
             Doctor d = doctorRepository.findById(dto.getPrimaryDoctorId())
                     .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + dto.getPrimaryDoctorId()));
             p.setPrimaryDoctor(d);
-        } else {
-            p.setPrimaryDoctor(null);
         }
-
         patientRepository.save(p);
         return mapToDto(p);
     }

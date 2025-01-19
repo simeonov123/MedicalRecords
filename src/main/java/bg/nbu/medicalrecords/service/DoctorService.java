@@ -84,4 +84,21 @@ public class DoctorService {
     User user = authenticationService.getCurrentUser();
     return doctorRepository.findByKeycloakUserId(user.getKeycloakUserId());
     }
+
+    public Doctor updateDoctorByKeycloakUserId(String keycloakUserId, Doctor updated) {
+        User user = userService.findByKeycloakUserId(keycloakUserId);
+        if (user == null) {
+            throw new RuntimeException("User not found with keycloakUserId: " + keycloakUserId);
+        }
+
+        Doctor doc = doctorRepository.findByKeycloakUserId(keycloakUserId);
+        if (doc == null) {
+            throw new RuntimeException("Doctor not found with keycloakUserId: " + keycloakUserId);
+        }
+
+        doc.setName(user.getFirstName() + " " + user.getLastName());
+        doc.setPrimaryCare(updated.isPrimaryCare());
+        doc.setSpecialties(updated.getSpecialties().isEmpty() ? "N/A" : updated.getSpecialties());
+        return doctorRepository.save(doc);
+    }
 }

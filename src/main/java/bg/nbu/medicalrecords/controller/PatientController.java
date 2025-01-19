@@ -32,7 +32,7 @@ public class PatientController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<PatientDto> update(@PathVariable Long id, @Valid @RequestBody UpdatePatientDto dto) {
+    public ResponseEntity<PatientDto> update(@PathVariable String id, @Valid @RequestBody UpdatePatientDto dto) {
         return ResponseEntity.ok(patientService.updatePatient(id, dto));
     }
 
