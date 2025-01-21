@@ -3,6 +3,8 @@ package bg.nbu.medicalrecords.service;
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.CreateDiagnosisDto;
 import bg.nbu.medicalrecords.dto.UpdateDiagnosisDto;
+import bg.nbu.medicalrecords.exception.DiagnosisNotFoundException;
+import bg.nbu.medicalrecords.exception.DoctorNotAssignedException;
 import bg.nbu.medicalrecords.repository.DiagnosisRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -130,7 +132,7 @@ public class DiagnosisServiceTest {
         when(appointmentService.findById(appointment.getId())).thenReturn(appointment);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DoctorNotAssignedException exception = assertThrows(DoctorNotAssignedException.class, () -> {
             diagnosisService.createDiagnosis(appointment.getId(), createDiagnosisDto);
         });
 
@@ -184,7 +186,7 @@ public class DiagnosisServiceTest {
         when(appointmentService.findById(appointment.getId())).thenReturn(appointment);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DoctorNotAssignedException exception = assertThrows(DoctorNotAssignedException.class, () -> {
             diagnosisService.updateDiagnosis(appointment.getId(), diagnosis.getId(), updateDiagnosisDto);
         });
 
@@ -211,11 +213,11 @@ public class DiagnosisServiceTest {
         when(diagnosisRepository.findById(diagnosis.getId())).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DiagnosisNotFoundException exception = assertThrows(DiagnosisNotFoundException.class, () -> {
             diagnosisService.updateDiagnosis(appointment.getId(), diagnosis.getId(), updateDiagnosisDto);
         });
 
-        assertEquals("Sick leave not found", exception.getMessage());
+        assertEquals("Diagnosis not found", exception.getMessage());
         verify(authenticationService, times(1)).getCurrentUser();
         verify(doctorService, times(1)).findByPrincipal();
         verify(appointmentService, times(1)).findById(appointment.getId());
@@ -260,7 +262,7 @@ public class DiagnosisServiceTest {
         when(appointmentService.findById(appointment.getId())).thenReturn(appointment);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DoctorNotAssignedException exception = assertThrows(DoctorNotAssignedException.class, () -> {
             diagnosisService.deleteDiagnosis(diagnosis.getId(), appointment.getId());
         });
 
@@ -285,7 +287,7 @@ public class DiagnosisServiceTest {
         when(diagnosisRepository.findById(diagnosis.getId())).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DiagnosisNotFoundException exception = assertThrows(DiagnosisNotFoundException.class, () -> {
             diagnosisService.deleteDiagnosis(diagnosis.getId(), appointment.getId());
         });
 
@@ -324,7 +326,7 @@ public class DiagnosisServiceTest {
         when(diagnosisRepository.findById(diagnosis.getId())).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DiagnosisNotFoundException exception = assertThrows(DiagnosisNotFoundException.class, () -> {
             diagnosisService.findById(diagnosis.getId());
         });
 

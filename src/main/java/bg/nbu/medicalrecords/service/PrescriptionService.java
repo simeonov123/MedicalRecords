@@ -3,6 +3,7 @@ package bg.nbu.medicalrecords.service;
 import bg.nbu.medicalrecords.dto.UpdatePrescriptionDto;
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.CreatePrescriptionDto;
+import bg.nbu.medicalrecords.exception.*;
 import bg.nbu.medicalrecords.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,14 +14,10 @@ public class PrescriptionService {
 
     private final AuthenticationService authenticationService;
     private final PrescriptionRepository prescriptionRepository;
-
     private final AppointmentService appointmentService;
-
     private final TreatmentService treatmentService;
-
     private final MedicationService medicationService;
     private final DiagnosisService diagnosisService;
-
 
     public PrescriptionService(AuthenticationService authenticationService, PrescriptionRepository prescriptionRepository, AppointmentService appointmentService, TreatmentService treatmentService, MedicationService medicationService, DiagnosisService diagnosisService) {
         this.authenticationService = authenticationService;
@@ -32,23 +29,17 @@ public class PrescriptionService {
     }
 
     public Prescription createPrescription(Long appointmentId, Long treatmentId, CreatePrescriptionDto createPrescriptionDto) {
-        // Check if the appointment exists
         Appointment appointment = appointmentService.findById(appointmentId);
-
-        // Check if the treatment exists
         Treatment treatment = treatmentService.findById(treatmentId);
-
-        // Check if the medication exists
         Medication medication = medicationService.findById(createPrescriptionDto.getMedicationId());
 
-        // Check if the user trying to create the prescription has the right to do so
         User currentUser = authenticationService.getCurrentUser();
-
-        // Check if the user is a doctor and if they are the doctor that created the appointment
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedException("Doctor is not assigned to this appointment");
             }
+        } else if (!currentUser.getRole().equals("admin")) {
+            throw new UnauthorizedAccessException("User is not authorized to create a prescription");
         }
 
         Prescription prescription = new Prescription();
@@ -73,23 +64,18 @@ public class PrescriptionService {
     }
 
     public Prescription updatePrescription(Long appointmentId, Long treatmentId, Long prescriptionId, UpdatePrescriptionDto updatePrescriptionDto) {
-        // Check if the appointment exists
         Appointment appointment = appointmentService.findById(appointmentId);
-
-        // Check if the treatment exists
         Treatment treatment = treatmentService.findById(treatmentId);
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+                .orElseThrow(() -> new PrescriptionNotFoundException("Prescription not found"));
 
-        // Check if the prescription exists
-        Prescription prescription = prescriptionRepository.findById(prescriptionId).orElseThrow(() -> new IllegalStateException("Prescription not found"));
-
-        // Check if the user trying to update the prescription has the right to do so
         User currentUser = authenticationService.getCurrentUser();
-
-        // Check if the user is a doctor and if they are the doctor that created the appointment
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedException("Doctor is not assigned to this appointment");
             }
+        } else if (!currentUser.getRole().equals("admin")) {
+            throw new UnauthorizedAccessException("User is not authorized to update a prescription");
         }
 
         prescription.setDosage(updatePrescriptionDto.getDosage());
@@ -101,27 +87,21 @@ public class PrescriptionService {
         appointmentService.save(appointment);
 
         return savedPrescription;
-
     }
 
     public void deletePrescription(Long appointmentId, Long treatmentId, Long prescriptionId) {
-        // Check if the appointment exists
         Appointment appointment = appointmentService.findById(appointmentId);
-
-        // Check if the treatment exists
         Treatment treatment = treatmentService.findById(treatmentId);
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+                .orElseThrow(() -> new PrescriptionNotFoundException("Prescription not found"));
 
-        // Check if the prescription exists
-        Prescription prescription = prescriptionRepository.findById(prescriptionId).orElseThrow(() -> new IllegalStateException("Prescription not found"));
-
-        // Check if the user trying to delete the prescription has the right to do so
         User currentUser = authenticationService.getCurrentUser();
-
-        // Check if the user is a doctor and if they are the doctor that created the appointment
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedException("Doctor is not assigned to this appointment");
             }
+        } else if (!currentUser.getRole().equals("admin")) {
+            throw new UnauthorizedAccessException("User is not authorized to delete a prescription");
         }
 
         treatment.getPrescriptions().remove(prescription);
@@ -131,6 +111,5 @@ public class PrescriptionService {
 
         appointment.setUpdatedAt(LocalDateTime.now());
         appointmentService.save(appointment);
-
     }
 }

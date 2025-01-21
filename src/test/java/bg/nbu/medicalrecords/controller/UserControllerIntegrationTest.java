@@ -158,6 +158,8 @@ class UserControllerIntegrationTest {
         // GIVEN
         String userId = "fakeUserId";
         KeycloakUserDto dto = new KeycloakUserDto();
+        dto.setId(userId);
+        dto.setEgn("1234567890");
         dto.setEmail("newEmail@example.com");
         dto.setUsername("newUsername");
         dto.setEmailVerified(true);

@@ -19,31 +19,27 @@ import java.util.stream.Collectors;
 public class PatientService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
-
     private final UserService userService;
 
-    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UserService userService ) {
+    public PatientService(PatientRepository patientRepository, DoctorRepository doctorRepository, UserService userService) {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.userService = userService;
     }
 
     public Patient createPatientFromKeycloak(String kcUserId, String name) {
-
         User user = userService.findByKeycloakUserId(kcUserId);
         if (user == null) {
-            throw new RuntimeException("User not found with keycloak id: " + kcUserId);
+            throw new ResourceNotFoundException("User not found with keycloak id: " + kcUserId);
         }
         if (!Objects.equals(user.getKeycloakUserId(), kcUserId)) {
-            throw new RuntimeException("User keycloak id mismatch");
+            throw new ResourceNotFoundException("User keycloak id mismatch");
         }
 
         if (!Objects.equals(user.getRole(), "patient")) {
-
             user.setRole("patient");
             userService.createUser(user);
         }
-
 
         Patient p = new Patient();
         p.setKeycloakUserId(kcUserId);
@@ -82,7 +78,7 @@ public class PatientService {
         }
         User user = userService.findByKeycloakUserId(p.getKeycloakUserId());
         p.setName(user.getFirstName() + " " + user.getLastName());
-        if (dto.getHealthInsurancePaid() != null){
+        if (dto.getHealthInsurancePaid() != null) {
             p.setHealthInsurancePaid(dto.getHealthInsurancePaid());
         }
         if (dto.getPrimaryDoctorId() != null && dto.getPrimaryDoctorId() != 0) {
@@ -102,7 +98,6 @@ public class PatientService {
     }
 
     public List<PatientDto> findAll() {
-
         List<PatientDto> patients = patientRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
 
         for (PatientDto patient : patients) {
@@ -128,8 +123,6 @@ public class PatientService {
 
     public PatientDto findByEgn(String egn) {
         User user = userService.findByEgn(egn);
-
-
         Patient p = patientRepository.findByKeycloakUserId(user.getKeycloakUserId());
         if (p == null) {
             throw new ResourceNotFoundException("Patient not found with EGN: " + egn);
@@ -155,7 +148,7 @@ public class PatientService {
 
     public void assignPrimaryDoctor(Long patientId, Long doctorId) {
         Patient p = patientRepository.findById(patientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + doctorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + patientId));
         User user = userService.findByKeycloakUserId(p.getKeycloakUserId());
         if (user == null) {
             throw new ResourceNotFoundException("Patient not found with id: " + patientId);
@@ -164,7 +157,7 @@ public class PatientService {
             throw new ResourceNotFoundException("User not a patient");
         }
         Doctor d = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found id=" + doctorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
 
         p.setPrimaryDoctor(d);
         patientRepository.save(p);
@@ -196,7 +189,6 @@ public class PatientService {
     public long count() {
         return patientRepository.count();
     }
-
 
     public List<PatientDto> findAllByPrimaryDoctorId(Long doctorId) {
         List<Patient> patients = patientRepository.findByPrimaryDoctor_Id(doctorId);

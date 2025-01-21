@@ -1,6 +1,7 @@
 package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.Medication;
+import bg.nbu.medicalrecords.exception.MedicationNotFoundException;
 import bg.nbu.medicalrecords.repository.MedicationRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +17,11 @@ public class MedicationService {
     }
 
     public List<Medication> getAll() {
-
         return medicationRepository.findAll();
     }
 
     public Medication findById(Long medicationId) {
-        return medicationRepository.findById(medicationId).orElseThrow(() -> new IllegalArgumentException("Medication not found"));
+        return medicationRepository.findById(medicationId)
+                .orElseThrow(() -> new MedicationNotFoundException("Medication not found with id: " + medicationId));
     }
 }

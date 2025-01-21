@@ -5,6 +5,7 @@ import bg.nbu.medicalrecords.dto.RegistrationDto;
 import bg.nbu.medicalrecords.service.KeycloakService;
 import bg.nbu.medicalrecords.service.PatientService;
 import bg.nbu.medicalrecords.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody RegistrationDto registrationDto) {
+    public ResponseEntity<String> signup(@RequestBody @Valid RegistrationDto registrationDto) {
         // 1. Create user in Keycloak
         String userId = keycloakService.createUser(
                 registrationDto.getUsername(),

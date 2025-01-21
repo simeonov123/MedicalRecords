@@ -7,6 +7,8 @@ import bg.nbu.medicalrecords.domain.User;
 import bg.nbu.medicalrecords.dto.CreateTreatmentDto;
 import bg.nbu.medicalrecords.dto.TreatmentDto;
 import bg.nbu.medicalrecords.dto.UpdateTreatmentDto;
+import bg.nbu.medicalrecords.exception.DoctorNotAssignedToAppointmentException;
+import bg.nbu.medicalrecords.exception.TreatmentNotFoundException;
 import bg.nbu.medicalrecords.repository.TreatmentRepository;
 import bg.nbu.medicalrecords.util.MappingUtils;
 import org.springframework.stereotype.Service;
@@ -18,9 +20,7 @@ import java.util.ArrayList;
 public class TreatmentService {
 
     private final AuthenticationService authenticationService;
-
     private final AppointmentService appointmentService;
-
     private final DiagnosisService diagnosisService;
     private final TreatmentRepository treatmentRepository;
 
@@ -37,7 +37,7 @@ public class TreatmentService {
 
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedToAppointmentException("Doctor is not assigned to this appointment");
             }
         }
 
@@ -55,19 +55,17 @@ public class TreatmentService {
         diagnosis.getTreatments().add(treatment);
         diagnosis = diagnosisService.save(diagnosis);
 
-
         Diagnosis updatedDiagnosis = diagnosisService.save(diagnosis);
         appointment.setUpdatedAt(LocalDateTime.now());
         appointment.getDiagnoses().get(appointment.getDiagnoses().indexOf(diagnosis)).getTreatments().addAll(updatedDiagnosis.getTreatments());
 
         appointmentService.save(appointment);
 
-
         return MappingUtils.mapToTreatmentDto(treatment);
     }
 
     public Treatment findById(Long treatmentId) {
-        return treatmentRepository.findById(treatmentId).orElseThrow(() -> new IllegalStateException("Treatment not found"));
+        return treatmentRepository.findById(treatmentId).orElseThrow(() -> new TreatmentNotFoundException("Treatment not found"));
     }
 
     public Treatment save(Treatment treatment) {
@@ -81,7 +79,7 @@ public class TreatmentService {
 
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedToAppointmentException("Doctor is not assigned to this appointment");
             }
         }
 
@@ -99,7 +97,7 @@ public class TreatmentService {
 
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedToAppointmentException("Doctor is not assigned to this appointment");
             }
         }
 

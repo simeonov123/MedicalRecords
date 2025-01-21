@@ -5,6 +5,7 @@ import bg.nbu.medicalrecords.domain.Doctor;
 import bg.nbu.medicalrecords.domain.Patient;
 import bg.nbu.medicalrecords.domain.User;
 import bg.nbu.medicalrecords.dto.*;
+import bg.nbu.medicalrecords.exception.DoctorNotAssignedException;
 import bg.nbu.medicalrecords.repository.AppointmentRepository;
 import bg.nbu.medicalrecords.repository.PatientRepository;
 import bg.nbu.medicalrecords.util.MappingUtils;
@@ -353,7 +354,7 @@ public class AppointmentServiceTest {
             appointmentService.findById(appointmentId);
         });
 
-        assertEquals("Appointment not found", exception.getMessage());
+        assertEquals("Appointment not found with id: 1", exception.getMessage());
 
         verify(appointmentRepository, times(1)).findById(appointmentId);
     }
@@ -665,7 +666,7 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        DoctorNotAssignedException exception = assertThrows(DoctorNotAssignedException.class, () -> {
             appointmentService.deleteAppointment(appointmentId);
         });
 

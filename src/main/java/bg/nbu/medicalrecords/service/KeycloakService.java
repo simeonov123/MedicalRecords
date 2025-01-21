@@ -3,7 +3,6 @@
 package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.User;
-import bg.nbu.medicalrecords.dto.KeycloakPlusLocalUserDto;
 import bg.nbu.medicalrecords.dto.KeycloakUserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -304,9 +303,19 @@ public class KeycloakService {
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             List<Map<String, Object>> usersList = (List<Map<String, Object>>) response.getBody();
             // Convert each user record to KeycloakUserDto
-            return usersList.stream()
+            List<KeycloakUserDto> returnDto = usersList.stream()
                     .map(this::mapKeycloakUser)
                     .collect(Collectors.toList());
+
+            //for each keycloak user dto find the user in the local db and get their egn and pass it in the dto
+            for (KeycloakUserDto keycloakUser : returnDto) {
+                User user = userService.findByKeycloakUserId(keycloakUser.getId());
+                if (user != null) {
+                    keycloakUser.setEgn(user.getEgn());
+                }
+            }
+
+            return returnDto;
         } else {
             throw new RuntimeException("Failed to fetch users from Keycloak");
         }

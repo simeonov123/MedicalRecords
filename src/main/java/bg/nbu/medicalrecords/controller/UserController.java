@@ -4,6 +4,9 @@ package bg.nbu.medicalrecords.controller;
 import bg.nbu.medicalrecords.dto.KeycloakUserDto;
 import bg.nbu.medicalrecords.service.KeycloakService;
 import bg.nbu.medicalrecords.service.LocalSyncService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +42,8 @@ public class UserController {
     @PutMapping("/{userId}/role")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> updateUserRole(
-            @PathVariable String userId,
-            @RequestBody RoleRequest request
+            @PathVariable @NotNull String userId,
+            @RequestBody @Valid RoleRequest request
     ) {
         keycloakService.updateUserRole(userId, request.role());
         localSyncService.handleRoleChange(userId, request.role());
@@ -54,7 +57,7 @@ public class UserController {
     @PutMapping("/{userId}/verify-email")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> verifyEmail(
-            @PathVariable String userId,
+            @PathVariable @NotNull String userId,
             @RequestParam boolean verified
     ) {
         keycloakService.setUserEmailVerified(userId, verified);
@@ -66,7 +69,7 @@ public class UserController {
      */
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable @NotNull String userId) {
         keycloakService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
@@ -77,8 +80,8 @@ public class UserController {
     @PutMapping("/{userId}/details")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> updateUserDetails(
-            @PathVariable String userId,
-            @RequestBody KeycloakUserDto dto
+            @PathVariable @NotNull String userId,
+            @RequestBody @Valid KeycloakUserDto dto
     ) {
         keycloakService.updateUserDetails(userId, dto);
         return ResponseEntity.ok().build();

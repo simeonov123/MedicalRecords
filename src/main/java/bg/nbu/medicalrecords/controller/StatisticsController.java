@@ -3,6 +3,7 @@ package bg.nbu.medicalrecords.controller;
 import bg.nbu.medicalrecords.dto.*;
 import bg.nbu.medicalrecords.service.PatientService;
 import bg.nbu.medicalrecords.service.StatisticsService;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,20 +25,11 @@ public class StatisticsController {
         this.patientService = patientService;
     }
 
-//    Request URL:
-//    http://localhost:8081/statistics/diagnosis/unique
-//    Request Method:
-//    GET
     @GetMapping("/diagnoses/unique")
     public ResponseEntity<List<String>> getUniqueDiagnosis() {
         return ResponseEntity.ok(statisticsService.getUniqueDiagnosis());
     }
 
-
-//    Request URL:
-//    http://localhost:8081/statistics/diagnosis/leaderboard
-//    Request Method:
-//    GET
 
     @GetMapping("/diagnoses/leaderboard")
     public ResponseEntity<DiagnosisStatisticsDto> getDiagnosisLeaderboard() {
@@ -45,16 +37,13 @@ public class StatisticsController {
     }
 
     @GetMapping("/patients/byDoctor/{doctorId}")
-    public ResponseEntity<List<PatientDto>> getPatientsByPrimaryDoctor(@PathVariable Long doctorId) {
+    public ResponseEntity<List<PatientDto>> getPatientsByPrimaryDoctor(@PathVariable @NotNull Long doctorId) {
         List<PatientDto> patients = patientService.findAllByPrimaryDoctorId(doctorId);
         return ResponseEntity.ok(patients);
     }
 
 
-    //    Request URL:
-//    http://localhost:8081/statistics/doctors-with-patient-count
-//    Request Method:
-//    GET
+
 
     @GetMapping("/doctors-with-patient-count")
     public ResponseEntity<List<DoctorPatientCountDto>> getDoctorsWithPatientCount() {
@@ -62,10 +51,7 @@ public class StatisticsController {
     }
 
 
-    //    Request URL:
-//    http://localhost:8081/statistics/doctors-with-appointments-count
-//    Request Method:
-//    GET
+
 
     @GetMapping("/doctors-with-appointments-count")
     public ResponseEntity<List<DoctorAppointmentsCount>> getDoctorsWithAppointmentsCount() {
@@ -73,10 +59,6 @@ public class StatisticsController {
     }
 
 
-    //Request URL:
-    //http://localhost:8081/statistics/doctors-with-appointments-in-period?startDate=2025-01-05T00:00:00.000&endDate=2025-01-29T00:00:00.000
-    //Request Method:
-    //GET
 
     @GetMapping("/doctors-with-appointments-in-period")
     public ResponseEntity<List<DoctorsThatHaveAppointmentsInPeriod>> getDoctorsWithAppointmentsInPeriod(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -84,10 +66,7 @@ public class StatisticsController {
         return ResponseEntity.ok(statisticsService.getDoctorsWithAppointmentsInPeriod(startDate, endDate));
     }
 
-//Request URL:
-//http://localhost:8081/statistics/most-sick-leaves-month-data
-//Request Method:
-//GET
+
 
     @GetMapping("/most-sick-leaves-month-data")
     public ResponseEntity<MostSickLeavesMonthData> getMostSickLeavesMonthData() {

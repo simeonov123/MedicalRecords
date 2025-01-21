@@ -1,6 +1,7 @@
 package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.User;
+import bg.nbu.medicalrecords.exception.UnauthorizedAccessException;
 import bg.nbu.medicalrecords.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -93,7 +94,7 @@ public class AuthenticationServiceTest {
             mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
 
             // Act & Assert
-            IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            UnauthorizedAccessException exception = assertThrows(UnauthorizedAccessException.class, () -> {
                 authenticationService.getCurrentUser();
             });
 
@@ -111,10 +112,11 @@ public class AuthenticationServiceTest {
      * Test retrieving the current user when the JWT does not contain the 'sub' claim, expecting null.
      */
     @Test
-    void getCurrentUser_JwtWithoutSubClaim() {
+    void getCurrentUser_WithValidSubClaim() {
         // Arrange
+        String keycloakUserId = "valid-keycloak-id";
         Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim("sub")).thenReturn(null);
+        when(jwt.getClaim("sub")).thenReturn(keycloakUserId);
 
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(jwt);
@@ -122,21 +124,24 @@ public class AuthenticationServiceTest {
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(authentication);
 
+        User mockUser = new User(); // Replace with your actual User constructor or builder
+        when(userRepository.findByKeycloakUserId(keycloakUserId)).thenReturn(mockUser);
+
         try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
             mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-
-            when(userRepository.findByKeycloakUserId(null)).thenReturn(null);
 
             // Act
             User result = authenticationService.getCurrentUser();
 
             // Assert
-            assertNull(result);
+            assertNotNull(result);
+            assertEquals(mockUser, result);
 
             mockedSecurityContextHolder.verify(SecurityContextHolder::getContext, times(1));
             verify(authentication, times(1)).getPrincipal();
             verify(jwt, times(1)).getClaim("sub");
-            verify(userRepository, times(1)).findByKeycloakUserId(null);
+            verify(userRepository, times(1)).findByKeycloakUserId(keycloakUserId);
         }
     }
+
 }

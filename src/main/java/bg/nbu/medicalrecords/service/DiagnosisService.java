@@ -2,15 +2,15 @@ package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.*;
 import bg.nbu.medicalrecords.dto.CreateDiagnosisDto;
-import bg.nbu.medicalrecords.dto.CreateTreatmentDto;
 import bg.nbu.medicalrecords.dto.UpdateDiagnosisDto;
+import bg.nbu.medicalrecords.exception.DiagnosisNotFoundException;
+import bg.nbu.medicalrecords.exception.DoctorNotAssignedException;
+import bg.nbu.medicalrecords.exception.UnauthorizedAccessException;
 import bg.nbu.medicalrecords.repository.DiagnosisRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DiagnosisService {
@@ -33,8 +33,10 @@ public class DiagnosisService {
 
         if (currentUser.getRole().equals("doctor")) {
             if (!appointment.getDoctor().getKeycloakUserId().equals(currentUser.getKeycloakUserId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedException("Doctor is not assigned to this appointment");
             }
+        } else if ((!currentUser.getRole().equals("admin"))){
+            throw new UnauthorizedAccessException("User is not authorized to create a diagnosis");
         }
 
         Diagnosis diagnosis = new Diagnosis();
@@ -58,12 +60,14 @@ public class DiagnosisService {
             Doctor doctor = doctorService.findByPrincipal();
 
             if (!appointment.getDoctor().getId().equals(doctor.getId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedException("Doctor is not assigned to this appointment");
             }
+        } else if (!currentUser.getRole().equals("admin")) {
+            throw new UnauthorizedAccessException("User is not authorized to update a diagnosis");
         }
 
-        Diagnosis diagnosis = diagnosisRepository.findById(diagnosisId).orElseThrow(() -> new IllegalStateException("Sick leave not found"));
-
+        Diagnosis diagnosis = diagnosisRepository.findById(diagnosisId)
+                .orElseThrow(() -> new DiagnosisNotFoundException("Diagnosis not found"));
 
         diagnosis.setDiagnosedDate(updateDiagnosisDto.getDiagnosedDate());
         diagnosis.setStatement(updateDiagnosisDto.getStatement());
@@ -84,11 +88,14 @@ public class DiagnosisService {
             Doctor doctor = doctorService.findByPrincipal();
 
             if (!appointment.getDoctor().getId().equals(doctor.getId())) {
-                throw new IllegalStateException("Doctor is not assigned to this appointment");
+                throw new DoctorNotAssignedException("Doctor is not assigned to this appointment");
             }
+        } else if (!currentUser.getRole().equals("admin")) {
+            throw new UnauthorizedAccessException("User is not authorized to delete a diagnosis");
         }
 
-        Diagnosis diagnosis = diagnosisRepository.findById(diagnosisId).orElseThrow(() -> new IllegalStateException("Diagnosis not found"));
+        Diagnosis diagnosis = diagnosisRepository.findById(diagnosisId)
+                .orElseThrow(() -> new DiagnosisNotFoundException("Diagnosis not found"));
 
         diagnosisRepository.delete(diagnosis);
 
@@ -97,19 +104,15 @@ public class DiagnosisService {
     }
 
     public Diagnosis findById(Long diagnosisId) {
-        return diagnosisRepository.findById(diagnosisId).orElseThrow(  () -> new IllegalStateException("Diagnosis not found"));
-
+        return diagnosisRepository.findById(diagnosisId)
+                .orElseThrow(() -> new DiagnosisNotFoundException("Diagnosis not found"));
     }
 
     public Diagnosis save(Diagnosis diagnosis) {
         return diagnosisRepository.save(diagnosis);
     }
 
-
     public List<String> getUniqueDiagnosis() {
-        //We should want the unique diagnosis to be queried by their statements.
-        //We should not want to return the same diagnosis statement multiple times.
-        //We should want to return a list of distinct diagnosis statements.
         return diagnosisRepository.findDistinctStatements();
     }
 

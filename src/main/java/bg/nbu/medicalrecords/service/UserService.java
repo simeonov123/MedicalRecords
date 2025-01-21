@@ -1,7 +1,7 @@
 package bg.nbu.medicalrecords.service;
 
-import bg.nbu.medicalrecords.domain.Patient;
 import bg.nbu.medicalrecords.domain.User;
+import bg.nbu.medicalrecords.exception.UserNotFoundException;
 import bg.nbu.medicalrecords.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +23,18 @@ public class UserService {
     }
 
     public User findByKeycloakUserId(String kcUserId) {
-        return userRepository.findByKeycloakUserId(kcUserId);
+        User user = userRepository.findByKeycloakUserId(kcUserId);
+        if (user == null) {
+            throw new UserNotFoundException("User not found with Keycloak ID: " + kcUserId);
+        }
+        return user;
     }
 
     public User findByEgn(String egn) {
-       User user = userRepository.findByEgn(egn);
-
+        User user = userRepository.findByEgn(egn);
+        if (user == null) {
+            throw new UserNotFoundException("User not found with EGN: " + egn);
+        }
         return findByKeycloakUserId(user.getKeycloakUserId());
     }
 
@@ -41,9 +47,9 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public void assignRole(String userId, String admin) {
+    public void assignRole(String userId, String role) {
         User user = findByKeycloakUserId(userId);
-        user.setRole(admin);
+        user.setRole(role);
         userRepository.save(user);
     }
 

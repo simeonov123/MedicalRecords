@@ -6,6 +6,7 @@ import bg.nbu.medicalrecords.dto.UpdatePatientDto;
 import bg.nbu.medicalrecords.service.PatientService;
 import bg.nbu.medicalrecords.service.StatisticsService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,13 +33,13 @@ public class PatientController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<PatientDto> update(@PathVariable String id, @Valid @RequestBody UpdatePatientDto dto) {
+    public ResponseEntity<PatientDto> update(@PathVariable @NotNull String id, @Valid @RequestBody UpdatePatientDto dto) {
         return ResponseEntity.ok(patientService.updatePatient(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @NotNull Long id) {
         patientService.deletePatient(id);
         return ResponseEntity.noContent().build();
     }
@@ -52,19 +53,19 @@ public class PatientController {
 
     @GetMapping("/searchByDiagnosis")
     @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
-    public ResponseEntity<List<PatientDto>> findAllByStatement(@RequestParam String diagnosis) {
+    public ResponseEntity<List<PatientDto>> findAllByStatement(@RequestParam @NotNull String diagnosis) {
         return ResponseEntity.ok(statisticsService.findAllByStatement(diagnosis));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('admin', 'doctor', 'patient')")
-    public ResponseEntity<PatientDto> findById(@PathVariable Long id) {
+    public ResponseEntity<PatientDto> findById(@PathVariable @NotNull Long id) {
         return ResponseEntity.ok(patientService.findById(id));
     }
 
     @GetMapping("/egn/{egn}")
     @PreAuthorize("hasAnyAuthority('admin', 'doctor')")
-    public ResponseEntity<PatientDto> findByEgn(@PathVariable String egn) {
+    public ResponseEntity<PatientDto> findByEgn(@PathVariable @NotNull String egn) {
         return ResponseEntity.ok(patientService.findByEgn(egn));
     }
 
@@ -81,7 +82,7 @@ public class PatientController {
 
     @PutMapping("/{id}/health-insurance")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Void> updateHealthInsuranceStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+    public ResponseEntity<Void> updateHealthInsuranceStatus(@PathVariable @NotNull Long id, @RequestBody @Valid Map<String, Boolean> body) {
         Boolean healthInsurancePaid = body.get("healthInsurancePaid");
         patientService.updateHealthInsuranceStatus(id, healthInsurancePaid);
         return ResponseEntity.ok().build();
@@ -89,7 +90,7 @@ public class PatientController {
 
     @GetMapping("/keycloak-user-id/{keycloakUserId}")
     @PreAuthorize("hasAnyAuthority('admin', 'doctor', 'patient')")
-    public ResponseEntity<PatientDto> findByKeycloakUserId(@PathVariable String keycloakUserId) {
+    public ResponseEntity<PatientDto> findByKeycloakUserId(@PathVariable @NotNull String keycloakUserId) {
         return ResponseEntity.ok(patientService.findByKeycloakUserId(keycloakUserId));
     }
 }

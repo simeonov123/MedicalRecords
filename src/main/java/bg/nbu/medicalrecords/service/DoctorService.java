@@ -2,6 +2,8 @@ package bg.nbu.medicalrecords.service;
 
 import bg.nbu.medicalrecords.domain.Doctor;
 import bg.nbu.medicalrecords.domain.User;
+import bg.nbu.medicalrecords.exception.DoctorNotFoundException;
+import bg.nbu.medicalrecords.exception.UserNotFoundException;
 import bg.nbu.medicalrecords.repository.DoctorRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,22 +15,21 @@ import java.util.Optional;
 public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final UserService userService;
-
     private final AuthenticationService authenticationService;
+
     public DoctorService(DoctorRepository doctorRepository, UserService userService, AuthenticationService authenticationService) {
         this.doctorRepository = doctorRepository;
         this.userService = userService;
         this.authenticationService = authenticationService;
     }
 
-
     public void createDoctorFromKeycloak(String kcUserId, String name, String uniqueIdentifier) {
         User user = userService.findByKeycloakUserId(kcUserId);
         if (user == null) {
-            throw new RuntimeException("User not found with keycloak id: " + kcUserId);
+            throw new UserNotFoundException("User not found with keycloak id: " + kcUserId);
         }
         if (!Objects.equals(user.getKeycloakUserId(), kcUserId)) {
-            throw new RuntimeException("User keycloak id mismatch");
+            throw new UserNotFoundException("User keycloak id mismatch");
         }
 
         user.setRole("doctor");
@@ -50,7 +51,6 @@ public class DoctorService {
         doctorRepository.deleteByKeycloakUserId(userId);
     }
 
-
     public Doctor createDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
@@ -65,7 +65,7 @@ public class DoctorService {
             doc.setPrimaryCare(updatedDoctor.isPrimaryCare());
             return doctorRepository.save(doc);
         }
-        throw new RuntimeException("Doctor not found with id: " + id);
+        throw new DoctorNotFoundException("Doctor not found with id: " + id);
     }
 
     public void deleteDoctor(Long id) {
@@ -77,23 +77,23 @@ public class DoctorService {
     }
 
     public Doctor findById(Long id) {
-        return doctorRepository.findById(id).orElseThrow(() -> new RuntimeException("Doctor not found"));
+        return doctorRepository.findById(id).orElseThrow(() -> new DoctorNotFoundException("Doctor not found"));
     }
 
     public Doctor findByPrincipal() {
-    User user = authenticationService.getCurrentUser();
-    return doctorRepository.findByKeycloakUserId(user.getKeycloakUserId());
+        User user = authenticationService.getCurrentUser();
+        return doctorRepository.findByKeycloakUserId(user.getKeycloakUserId());
     }
 
     public Doctor updateDoctorByKeycloakUserId(String keycloakUserId, Doctor updated) {
         User user = userService.findByKeycloakUserId(keycloakUserId);
         if (user == null) {
-            throw new RuntimeException("User not found with keycloakUserId: " + keycloakUserId);
+            throw new UserNotFoundException("User not found with keycloakUserId: " + keycloakUserId);
         }
 
         Doctor doc = doctorRepository.findByKeycloakUserId(keycloakUserId);
         if (doc == null) {
-            throw new RuntimeException("Doctor not found with keycloakUserId: " + keycloakUserId);
+            throw new DoctorNotFoundException("Doctor not found with keycloakUserId: " + keycloakUserId);
         }
 
         doc.setName(user.getFirstName() + " " + user.getLastName());

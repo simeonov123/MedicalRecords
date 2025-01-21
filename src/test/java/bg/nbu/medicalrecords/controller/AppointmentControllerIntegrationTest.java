@@ -382,28 +382,30 @@ public class AppointmentControllerIntegrationTest {
 
         // Mock input DTO
         UpdateSickLeaveDto updateSickLeaveDto = new UpdateSickLeaveDto();
-        updateSickLeaveDto.setEndDate(LocalDate.of(2025, 5, 12));
         updateSickLeaveDto.setReason("Extended recovery");
+        updateSickLeaveDto.setTodayDate(LocalDate.of(2026, 5, 1));
+        updateSickLeaveDto.setStartDate(LocalDate.of(2026, 5, 1));
+        updateSickLeaveDto.setEndDate(LocalDate.of(2026, 5, 12));
 
         // Mock returned SickLeave entity
         SickLeave sickLeave = new SickLeave();
         sickLeave.setId(sickLeaveId);
         sickLeave.setReason("Extended recovery");
-        sickLeave.setTodayDate(LocalDate.of(2025, 5, 1));
-        sickLeave.setStartDate(LocalDate.of(2025, 5, 1));
-        sickLeave.setEndDate(LocalDate.of(2025, 5, 12));
-        sickLeave.setCreatedAt(LocalDateTime.of(2025, 5, 1, 9, 0));
-        sickLeave.setUpdatedAt(LocalDateTime.of(2025, 5, 1, 9, 0));
+        sickLeave.setTodayDate(LocalDate.of(2026, 5, 1));
+        sickLeave.setStartDate(LocalDate.of(2026, 5, 1));
+        sickLeave.setEndDate(LocalDate.of(2026, 5, 12));
+        sickLeave.setCreatedAt(LocalDateTime.of(2026, 5, 1, 9, 0));
+        sickLeave.setUpdatedAt(LocalDateTime.of(2026, 5, 1, 9, 0));
 
         // Mock returned DTO
         SickLeaveDto sickLeaveDto = new SickLeaveDto(
                 sickLeaveId,
                 "Extended recovery",
-                LocalDate.of(2025, 5, 1),
-                LocalDate.of(2025, 5, 1),
-                LocalDate.of(2025, 5, 12),
-                LocalDateTime.of(2025, 5, 1, 9, 0),
-                LocalDateTime.of(2025, 5, 1, 9, 0)
+                LocalDate.of(2026, 5, 1),
+                LocalDate.of(2026, 5, 1),
+                LocalDate.of(2026, 5, 12),
+                LocalDateTime.of(2026, 5, 1, 9, 0),
+                LocalDateTime.of(2026, 5, 1, 9, 0)
         );
 
         // Mock the service call
@@ -423,7 +425,9 @@ public class AppointmentControllerIntegrationTest {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.id").value(sickLeaveId))
                     .andExpect(jsonPath("$.reason").value("Extended recovery"))
-                    .andExpect(jsonPath("$.endDate").value("2025-05-12"));
+                    .andExpect(jsonPath("$.todayDate").value("2026-05-01"))
+                    .andExpect(jsonPath("$.startDate").value("2026-05-01"))
+                    .andExpect(jsonPath("$.endDate").value("2026-05-12"));
 
             // Verify static method interaction
             mockedMappingUtils.verify(() -> MappingUtils.mapToSickLeaveDto(sickLeave), Mockito.times(1));
@@ -433,6 +437,7 @@ public class AppointmentControllerIntegrationTest {
         Mockito.verify(sickLeaveService, Mockito.times(1))
                 .updateSickLeave(eq(appointmentId), any(UpdateSickLeaveDto.class), eq(sickLeaveId));
     }
+
 
 
 
