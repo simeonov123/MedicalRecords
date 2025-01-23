@@ -50,7 +50,6 @@ public class KeycloakService {
     private final PatientService patientService;
 
 
-
     public KeycloakService(UserService userService, DoctorService doctorService, PatientService patientService) {
         this.userService = userService;
         this.doctorService = doctorService;
@@ -242,7 +241,6 @@ public class KeycloakService {
 
     /**
      * Trigger a sync of Keycloak users with the local database on a schedule (and can be called manually).
-     * This is an example: fetch all Keycloak users, compare with local DB, create or delete as needed.
      */
     // e.g., every 1 minute
     @Scheduled(fixedRate = 60_000)
@@ -291,7 +289,7 @@ public class KeycloakService {
         String adminToken = getAdminAccessToken();
         String url = keycloakAuthServerUrl
                 + "/admin/realms/" + realmName
-                + "/users?max=1000"; // Increase max if you have more than 1000 users
+                + "/users?max=1000"; // 1000 is way more than I'll ever have
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(adminToken);

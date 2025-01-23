@@ -27,7 +27,6 @@ public class SickLeave {
 
     private String reason;
 
-    // If you want to track the day the sick leave was generated
     private LocalDate todayDate;
 
     private LocalDate startDate;
