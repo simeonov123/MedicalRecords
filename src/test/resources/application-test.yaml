@@ -27,5 +27,3 @@ keycloak:
   admin:
     username: testadmin
     password: testpassword
-  credentials:
-    secret: testsecret

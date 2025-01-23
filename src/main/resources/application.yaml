@@ -27,7 +27,5 @@ keycloak:
   admin:
     username: medicalrealadmin
     password: STRONGPASSWORD!@#
-  # If your client is CONFIDENTIAL, you might need this:
-  credentials:
-    secret: YOUR_CLIENT_SECRET     # Only needed for confidential clients
+
 
